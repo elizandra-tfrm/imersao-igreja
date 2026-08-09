@@ -1,5 +1,8 @@
 # Site (GitHub Pages) — Imersão Igreja
 
+Publicado em: **https://elizandra-tfrm.github.io/imersao-igreja/**
+(repositório: [elizandra-tfrm/imersao-igreja](https://github.com/elizandra-tfrm/imersao-igreja))
+
 Front estático (HTML/CSS/JS puro, sem build) que fala com o backend em Google Apps Script
 via `fetch`. Veja o backend completo em [`../apps-script`](../apps-script).
 
@@ -18,7 +21,7 @@ via `fetch`. Veja o backend completo em [`../apps-script`](../apps-script).
 
 1. Publique o Apps Script como Web App (veja `../apps-script/README.md`, seção 4) e copie a URL `/exec`.
 2. Edite `config.js` e cole a URL na constante `WEBAPP_URL`.
-3. No menu **⛪ Imersão Igreja** da planilha, rode **"5. Configurar URL do site (GitHub Pages)"** e cole a URL deste site (ex: `https://idb-solutions.github.io/imersao-igreja`) — isso faz o PagBank redirecionar de volta para cá (e não mais para a página antiga do Apps Script) depois do pagamento.
+3. No menu **⛪ Imersão Igreja** da planilha, rode **"5. Configurar URL do site (GitHub Pages)"** e cole `https://elizandra-tfrm.github.io/imersao-igreja` — isso faz o PagBank redirecionar de volta para cá (e não mais para a página antiga do Apps Script) depois do pagamento.
 4. Publique uma nova versão do deployment do Apps Script (Manage deployments → New version) para a mudança do passo 3 valer.
 
 ## Por que isso existe (em vez de servir tudo pelo Apps Script)
