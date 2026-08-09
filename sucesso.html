@@ -16,8 +16,9 @@
 
     <div id="estado-pago" style="display:none;">
       <div class="icone-grande">✅</div>
-      <h1>Inscrição confirmada!</h1>
-      <p class="subtitulo" id="mensagem-pago">Sua inscrição está confirmada.</p>
+      <h1>Inscrição realizada com sucesso!</h1>
+      <p class="subtitulo" id="mensagem-pago">Ficamos felizes em receber você.</p>
+      <p class="subtitulo">Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação. Nos vemos no dia 05 de setembro de 2026!</p>
       <a class="botao" id="link-comprovante" href="#">Baixar comprovante</a>
     </div>
 
@@ -80,7 +81,7 @@
     function aoReceber(resposta) {
       if (resposta.status === 'Pago') {
         document.getElementById('mensagem-pago').textContent =
-          'Obrigado' + (resposta.nome ? ', ' + resposta.nome : '') + '! Sua inscrição está confirmada.';
+          'Obrigado' + (resposta.nome ? ', ' + resposta.nome : '') + '! Sua inscrição na Imersão Mulheres Renovadas para Transformar está confirmada.';
         document.getElementById('link-comprovante').href = 'comprovante.html?ref=' + encodeURIComponent(codigo);
         mostrarEstado('estado-pago');
         return;

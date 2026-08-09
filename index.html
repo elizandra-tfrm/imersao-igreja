@@ -9,25 +9,89 @@
 <body>
   <div class="cartao">
     <h1 id="titulo-evento">Inscrição</h1>
-    <p class="subtitulo">Preencha seus dados para se inscrever.</p>
+    <p class="subtitulo">Seja muito bem-vinda! Preencha suas informações com atenção e sinceridade — todas as respostas são confidenciais e lidas só pela coordenação.</p>
     <div class="valor-destaque" id="valor-destaque">Carregando...</div>
 
+    <div class="card-info">
+      <strong>Data:</strong> 05 de setembro de 2026 — das 8h às 19h (intervalo de almoço das 11h às 13h)<br>
+      <strong>Local:</strong> Igreja Presbiteriana de Costa Rica — Rua Avelina Paes Ananias, 125<br>
+      <strong>Realização:</strong> Ministério Rhema e Igreja Presbiteriana de Costa Rica<br>
+      <strong>Palestrante:</strong> Elizandra Rosa Matsumoto<br>
+      <strong>Dúvidas:</strong> Lilian — WhatsApp (67) 99608-3444
+    </div>
+
     <form id="form-inscricao" novalidate>
+      <h2 class="secao-titulo">1. Identificação</h2>
+
       <label for="nome">Nome completo</label>
       <input type="text" id="nome" name="nome" autocomplete="name" required>
       <div class="erro-campo" id="erro-nome"></div>
 
+      <label for="apelido">Como você deseja ser chamada</label>
+      <input type="text" id="apelido" name="apelido">
+
+      <label for="telefone">Telefone / WhatsApp (com DDD)</label>
+      <input type="text" id="telefone" name="telefone" inputmode="numeric" placeholder="Ex: 11988887777" required>
+      <div class="erro-campo" id="erro-telefone"></div>
+
       <label for="email">E-mail</label>
       <input type="email" id="email" name="email" autocomplete="email" required>
+      <div class="dica-campo">Usado só para o pagamento e para te enviar o comprovante.</div>
       <div class="erro-campo" id="erro-email"></div>
 
       <label for="cpf">CPF</label>
       <input type="text" id="cpf" name="cpf" inputmode="numeric" placeholder="Somente números" required>
+      <div class="dica-campo">Exigido pelo sistema de pagamento (PagBank).</div>
       <div class="erro-campo" id="erro-cpf"></div>
 
-      <label for="telefone">Telefone (com DDD)</label>
-      <input type="text" id="telefone" name="telefone" inputmode="numeric" placeholder="Ex: 11988887777" required>
-      <div class="erro-campo" id="erro-telefone"></div>
+      <label for="idade">Idade</label>
+      <input type="text" id="idade" name="idade" inputmode="numeric">
+
+      <label for="estadoCivil">Estado civil</label>
+      <input type="text" id="estadoCivil" name="estadoCivil">
+
+      <label>Tem filhos?</label>
+      <div class="grupo-radio">
+        <label><input type="radio" name="temFilhos" value="sim"> Sim</label>
+        <label><input type="radio" name="temFilhos" value="nao"> Não</label>
+      </div>
+      <div class="erro-campo" id="erro-temFilhos"></div>
+      <div class="campo-condicional" id="bloco-quantosFilhos" style="display:none;">
+        <label for="quantosFilhos">Se sim, quantos?</label>
+        <input type="text" id="quantosFilhos" name="quantosFilhos" inputmode="numeric">
+      </div>
+
+      <label>Você participa de alguma igreja ou denominação religiosa?</label>
+      <div class="grupo-radio">
+        <label><input type="radio" name="participaIgreja" value="sim"> Sim</label>
+        <label><input type="radio" name="participaIgreja" value="nao"> Não</label>
+      </div>
+      <div class="erro-campo" id="erro-participaIgreja"></div>
+      <div class="campo-condicional" id="bloco-qualIgreja" style="display:none;">
+        <label for="qualIgreja">Se sim, qual?</label>
+        <input type="text" id="qualIgreja" name="qualIgreja">
+      </div>
+
+      <h2 class="secao-titulo">2. Seu momento de vida</h2>
+      <p class="secao-descricao">Não existem respostas certas ou erradas. Responda com sinceridade e apenas até onde se sentir confortável.</p>
+
+      <label for="vidaComDeus">Em uma frase, como você descreveria hoje a sua vida com Deus?</label>
+      <textarea id="vidaComDeus" name="vidaComDeus"></textarea>
+
+      <label for="areaCura">Existe alguma área da sua vida em que você sente necessidade de cura, transformação, fortalecimento ou direcionamento?</label>
+      <textarea id="areaCura" name="areaCura"></textarea>
+
+      <label for="motivacao">O que motivou você a participar desta imersão?</label>
+      <textarea id="motivacao" name="motivacao"></textarea>
+
+      <h2 class="secao-titulo">3. Expectativas</h2>
+
+      <label for="expectativa">O que você espera receber ou levar desta imersão para a sua vida?</label>
+      <textarea id="expectativa" name="expectativa"></textarea>
+
+      <label for="necessidadeApoio">Existe alguma informação que a coordenação precisa saber para acolher você melhor durante a imersão?</label>
+      <div class="dica-campo">Exemplos: limitação física, necessidade especial, restrição alimentar, questão emocional ou alguma necessidade específica de apoio.</div>
+      <textarea id="necessidadeApoio" name="necessidadeApoio"></textarea>
 
       <button type="submit" id="botao-enviar">Ir para pagamento</button>
       <div class="mensagem-geral" id="mensagem-geral"></div>
@@ -49,12 +113,25 @@
       document.getElementById('valor-destaque').remove();
     });
 
+    // Mostra/esconde os campos condicionais (Sim/Não).
+    function configurarCondicional(nomeRadio, idBloco) {
+      var radios = document.querySelectorAll('input[name="' + nomeRadio + '"]');
+      radios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          document.getElementById(idBloco).style.display = (radio.value === 'sim' && radio.checked) ? 'block' : 'none';
+        });
+      });
+    }
+    configurarCondicional('temFilhos', 'bloco-quantosFilhos');
+    configurarCondicional('participaIgreja', 'bloco-qualIgreja');
+
     var form = document.getElementById('form-inscricao');
     var botao = document.getElementById('botao-enviar');
     var mensagemGeral = document.getElementById('mensagem-geral');
+    var camposComErro = ['nome', 'email', 'cpf', 'telefone', 'temFilhos', 'participaIgreja'];
 
     function limparErros() {
-      ['nome', 'email', 'cpf', 'telefone'].forEach(function (campo) {
+      camposComErro.forEach(function (campo) {
         document.getElementById('erro-' + campo).textContent = '';
       });
       mensagemGeral.textContent = '';
@@ -66,6 +143,11 @@
       botao.textContent = 'Ir para pagamento';
     }
 
+    function valorRadio(nome) {
+      var el = document.querySelector('input[name="' + nome + '"]:checked');
+      return el ? el.value : '';
+    }
+
     form.addEventListener('submit', function (evento) {
       evento.preventDefault();
       limparErros();
@@ -74,9 +156,21 @@
 
       var dados = {
         nome: document.getElementById('nome').value,
+        apelido: document.getElementById('apelido').value,
         email: document.getElementById('email').value,
         cpf: document.getElementById('cpf').value,
-        telefone: document.getElementById('telefone').value
+        telefone: document.getElementById('telefone').value,
+        idade: document.getElementById('idade').value,
+        estadoCivil: document.getElementById('estadoCivil').value,
+        temFilhos: valorRadio('temFilhos'),
+        quantosFilhos: document.getElementById('quantosFilhos').value,
+        participaIgreja: valorRadio('participaIgreja'),
+        qualIgreja: document.getElementById('qualIgreja').value,
+        vidaComDeus: document.getElementById('vidaComDeus').value,
+        areaCura: document.getElementById('areaCura').value,
+        motivacao: document.getElementById('motivacao').value,
+        expectativa: document.getElementById('expectativa').value,
+        necessidadeApoio: document.getElementById('necessidadeApoio').value
       };
 
       apiPost('registrarInscricao', { dados: dados })
@@ -92,9 +186,8 @@
         return;
       }
 
-      if (resposta.campo) {
-        var elErro = document.getElementById('erro-' + resposta.campo);
-        if (elErro) elErro.textContent = resposta.mensagem;
+      if (resposta.campo && document.getElementById('erro-' + resposta.campo)) {
+        document.getElementById('erro-' + resposta.campo).textContent = resposta.mensagem;
       } else {
         mensagemGeral.textContent = resposta.mensagem || 'Não foi possível continuar. Tente novamente.';
         mensagemGeral.className = 'mensagem-geral erro';
