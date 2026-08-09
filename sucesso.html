@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirmando inscrição</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="cartao centralizado">
+    <div id="estado-carregando">
+      <div class="spinner"></div>
+      <h1>Confirmando seu pagamento...</h1>
+      <p class="subtitulo">Isso pode levar alguns segundos.</p>
+    </div>
+
+    <div id="estado-pago" style="display:none;">
+      <div class="icone-grande">✅</div>
+      <h1>Inscrição confirmada!</h1>
+      <p class="subtitulo" id="mensagem-pago">Sua inscrição está confirmada.</p>
+      <a class="botao" id="link-comprovante" href="#">Baixar comprovante</a>
+    </div>
+
+    <div id="estado-falhou" style="display:none;">
+      <div class="icone-grande">⚠️</div>
+      <h1>Pagamento não aprovado</h1>
+      <p class="subtitulo" id="mensagem-falha">Não foi possível confirmar seu pagamento.</p>
+      <a class="botao" href="#" id="link-tentar-novamente">Tentar novamente</a>
+    </div>
+
+    <div id="estado-expirado" style="display:none;">
+      <div class="icone-grande">⏰</div>
+      <h1>Link de pagamento expirado</h1>
+      <p class="subtitulo">O prazo para pagamento dessa inscrição acabou.</p>
+      <a class="botao" href="#" id="link-gerar-novo">Gerar novo link de pagamento</a>
+    </div>
+
+    <div id="estado-demorando" style="display:none;">
+      <div class="icone-grande">🕒</div>
+      <h1>Ainda estamos confirmando</h1>
+      <p class="subtitulo">Isso está demorando mais que o normal. Guarde este link e volte a esta mesma página em alguns minutos — ela vai mostrar a confirmação assim que o pagamento cair.</p>
+    </div>
+
+    <div id="estado-erro" style="display:none;">
+      <div class="icone-grande">❌</div>
+      <h1>Link inválido</h1>
+      <p class="subtitulo">Não encontramos um código de inscrição nesse link.</p>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    var codigo = new URLSearchParams(window.location.search).get('ref');
+    var tentativas = 0;
+    var MAX_TENTATIVAS = 20; // ~60s de polling (3s cada)
+
+    function mostrarEstado(id) {
+      ['estado-carregando', 'estado-pago', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro']
+        .forEach(function (elId) {
+          document.getElementById(elId).style.display = (elId === id) ? 'block' : 'none';
+        });
+    }
+
+    function verificar() {
+      apiGet('consultarStatusInscricao', { codigo: codigo })
+        .then(aoReceber)
+        .catch(function () { agendarProximaChecagem(); });
+    }
+
+    function agendarProximaChecagem() {
+      tentativas++;
+      if (tentativas >= MAX_TENTATIVAS) {
+        mostrarEstado('estado-demorando');
+        return;
+      }
+      setTimeout(verificar, 3000);
+    }
+
+    function aoReceber(resposta) {
+      if (resposta.status === 'Pago') {
+        document.getElementById('mensagem-pago').textContent =
+          'Obrigado' + (resposta.nome ? ', ' + resposta.nome : '') + '! Sua inscrição está confirmada.';
+        document.getElementById('link-comprovante').href = 'comprovante.html?ref=' + encodeURIComponent(codigo);
+        mostrarEstado('estado-pago');
+        return;
+      }
+      if (resposta.status === 'Falhou') {
+        document.getElementById('mensagem-falha').textContent = resposta.erro || 'Pagamento recusado.';
+        document.getElementById('link-tentar-novamente').onclick = function (ev) {
+          ev.preventDefault();
+          tentarNovamente();
+        };
+        mostrarEstado('estado-falhou');
+        return;
+      }
+      if (resposta.status === 'Expirado') {
+        document.getElementById('link-gerar-novo').onclick = function (ev) {
+          ev.preventDefault();
+          tentarNovamente();
+        };
+        mostrarEstado('estado-expirado');
+        return;
+      }
+      // Pendente / NaoEncontrado (ainda propagando) -> continua tentando
+      agendarProximaChecagem();
+    }
+
+    function tentarNovamente() {
+      mostrarEstado('estado-carregando');
+      apiPost('reiniciarPagamento', { codigo: codigo }).then(function (resp) {
+        if (resp.ok) {
+          window.location.href = resp.paymentUrl;
+        } else {
+          alert(resp.mensagem || 'Não foi possível gerar um novo link de pagamento.');
+          mostrarEstado('estado-falhou');
+        }
+      }).catch(function () {
+        alert('Erro inesperado. Tente novamente em instantes.');
+        mostrarEstado('estado-falhou');
+      });
+    }
+
+    if (!codigo) {
+      mostrarEstado('estado-erro');
+    } else {
+      verificar(); // primeira checagem imediata (cobre o caso do webhook já ter confirmado antes do redirect)
+    }
+  </script>
+</body>
+</html>

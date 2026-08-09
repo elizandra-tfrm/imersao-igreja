@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comprovante de Pagamento</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="cartao centralizado">
+    <div id="estado-carregando">
+      <div class="spinner"></div>
+      <h1>Preparando seu comprovante...</h1>
+    </div>
+
+    <div id="estado-pronto" style="display:none;">
+      <div class="icone-grande">🧾</div>
+      <h1>Comprovante de pagamento</h1>
+      <p class="subtitulo" id="mensagem-pronto">Seu comprovante está pronto para download.</p>
+      <a class="botao" id="link-download" href="#">Baixar comprovante (PDF)</a>
+      <a class="botao secundario" id="link-voltar">Voltar à inscrição</a>
+    </div>
+
+    <div id="estado-erro" style="display:none;">
+      <div class="icone-grande">⚠️</div>
+      <h1>Comprovante indisponível</h1>
+      <p class="subtitulo" id="mensagem-erro"></p>
+      <a class="botao secundario" id="link-voltar-erro">Voltar à inscrição</a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    var codigo = new URLSearchParams(window.location.search).get('ref');
+    var linkVoltarHref = 'sucesso.html?ref=' + encodeURIComponent(codigo || '');
+    document.getElementById('link-voltar').href = linkVoltarHref;
+    document.getElementById('link-voltar-erro').href = linkVoltarHref;
+
+    function base64ParaBlob(base64, mime) {
+      var byteChars = atob(base64);
+      var byteNumbers = new Array(byteChars.length);
+      for (var i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+      return new Blob([new Uint8Array(byteNumbers)], { type: mime });
+    }
+
+    function mostrarErro(mensagem) {
+      document.getElementById('estado-carregando').style.display = 'none';
+      document.getElementById('mensagem-erro').textContent = mensagem;
+      document.getElementById('estado-erro').style.display = 'block';
+    }
+
+    if (!codigo) {
+      mostrarErro('Link inválido.');
+    } else {
+      apiGet('obterComprovante', { ref: codigo }).then(function (resp) {
+        if (!resp.ok) {
+          mostrarErro(resp.mensagem || 'Não foi possível carregar o comprovante.');
+          return;
+        }
+        var blob = base64ParaBlob(resp.base64, 'application/pdf');
+        var url = URL.createObjectURL(blob);
+        var link = document.getElementById('link-download');
+        link.href = url;
+        link.setAttribute('download', resp.nomeArquivo);
+
+        document.getElementById('mensagem-pronto').textContent =
+          'Olá' + (resp.nome ? ', ' + resp.nome : '') + '! Seu comprovante está pronto para download.';
+        document.getElementById('estado-carregando').style.display = 'none';
+        document.getElementById('estado-pronto').style.display = 'block';
+        link.click(); // baixa automaticamente; o botão continua disponível caso o navegador bloqueie.
+      }).catch(function () {
+        mostrarErro('Erro inesperado ao carregar o comprovante.');
+      });
+    }
+  </script>
+</body>
+</html>
