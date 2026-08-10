@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Comprovante de pagamento — Imersão Mulheres Renovadas para Transformar</title>
-<link rel="icon" href="img/borboleta.png">
+<link rel="icon" href="img/borboleta-3.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -17,51 +17,59 @@
   <span class="brilho brilho--2"></span>
   <span class="brilho brilho--3"></span>
 </div>
-<img class="borboleta-fundo borboleta-fundo--1" src="img/borboleta.gif" alt="" aria-hidden="true">
-<img class="borboleta-fundo borboleta-fundo--2" src="img/borboleta.gif" alt="" aria-hidden="true">
+<img class="borboleta-fundo borboleta-fundo--1" src="img/borboleta-3.png" alt="" aria-hidden="true">
+<img class="borboleta-fundo borboleta-fundo--2" src="img/borboleta-3.png" alt="" aria-hidden="true">
 
 <div class="folha">
 
   <header class="capa">
-    <img class="borboleta entra entra--1" src="img/borboleta.gif" alt="" aria-hidden="true">
+    <img class="borboleta entra entra--1" src="img/borboleta-3.png" alt="" aria-hidden="true">
     <div class="rotulo entra entra--1">Imersão Mulheres Renovadas para Transformar</div>
   </header>
 
-  <main class="cartao painel entra entra--2">
+  <main class="painel vidro entra entra--desfocado entra--2">
 
-    <div id="estado-carregando">
+    <div class="painel-zona ativa" id="estado-carregando">
       <div class="rodela"></div>
       <h1>Preparando seu comprovante</h1>
-      <p>Só um instante.</p>
+      <div class="painel-texto">
+        <p>Só um instante.</p>
+      </div>
     </div>
 
-    <div id="estado-pronto" hidden>
-      <div class="simbolo">
+    <div class="painel-zona" id="estado-pronto">
+      <div class="painel-icone">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z"></path>
           <path d="M14 2v6h6M9 13h6M9 17h4"></path>
         </svg>
       </div>
       <h1>Comprovante de <em>pagamento</em></h1>
-      <p id="mensagem-pronto">Seu comprovante está pronto para download.</p>
+      <div class="painel-texto">
+        <p id="mensagem-pronto">Seu comprovante está pronto para download.</p>
+      </div>
 
-      <div class="acao">
+      <div class="painel-acoes">
         <a class="botao" id="link-download" href="#">Baixar comprovante (PDF)</a>
         <a class="botao botao--suave" id="link-voltar" href="sucesso.html">Voltar à confirmação</a>
+        <a class="botao botao--suave" href="index.html">Fazer nova inscrição</a>
+        <p class="aviso-pagamento">Se o download não começar sozinho, use o botão acima.</p>
       </div>
-      <p class="aviso-pagamento">Se o download não começar sozinho, use o botão acima.</p>
     </div>
 
-    <div id="estado-erro" hidden>
-      <div class="simbolo" style="color:#8C6D1F;background:rgba(201,169,110,0.18)">
+    <div class="painel-zona" id="estado-erro">
+      <div class="painel-icone painel-icone--espera">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path>
         </svg>
       </div>
       <h1>Comprovante indisponível</h1>
-      <p id="mensagem-erro"></p>
-      <div class="acao">
+      <div class="painel-texto">
+        <p id="mensagem-erro"></p>
+      </div>
+      <div class="painel-acoes">
         <a class="botao botao--suave" id="link-voltar-erro" href="sucesso.html">Voltar à confirmação</a>
+        <a class="botao botao--suave" href="index.html">Fazer nova inscrição</a>
       </div>
     </div>
 
@@ -75,24 +83,22 @@
 
 <script src="config.js"></script>
 <script src="api.js"></script>
+<script src="animacoes.js?v=2"></script>
 <script>
 (function () {
   var codigo = new URLSearchParams(window.location.search).get('ref');
 
-  /* O botão de voltar precisa levar o mesmo código adiante; sem ele a página
-     de confirmação não sabe qual inscrição mostrar. */
+  /* O "voltar" precisa levar o código adiante; sem ele a confirmação não
+     sabe qual inscrição mostrar. */
   var destinoVoltar = codigo
     ? 'sucesso.html?ref=' + encodeURIComponent(codigo)
     : 'index.html';
   document.getElementById('link-voltar').href = destinoVoltar;
   document.getElementById('link-voltar-erro').href = destinoVoltar;
-  if (!codigo) {
-    document.getElementById('link-voltar-erro').textContent = 'Ir para a ficha de inscrição';
-  }
 
   function mostrar(id) {
     ['estado-carregando', 'estado-pronto', 'estado-erro'].forEach(function (elId) {
-      document.getElementById(elId).hidden = (elId !== id);
+      document.getElementById(elId).classList.toggle('ativa', elId === id);
     });
   }
 

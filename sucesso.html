@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Confirmação da inscrição — Imersão Mulheres Renovadas para Transformar</title>
-<link rel="icon" href="img/borboleta.png">
+<link rel="icon" href="img/borboleta-3.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -17,102 +17,116 @@
   <span class="brilho brilho--2"></span>
   <span class="brilho brilho--3"></span>
 </div>
-<img class="borboleta-fundo borboleta-fundo--1" src="img/borboleta.gif" alt="" aria-hidden="true">
-<img class="borboleta-fundo borboleta-fundo--2" src="img/borboleta.gif" alt="" aria-hidden="true">
+<img class="borboleta-fundo borboleta-fundo--1" src="img/borboleta-3.png" alt="" aria-hidden="true">
+<img class="borboleta-fundo borboleta-fundo--2" src="img/borboleta-3.png" alt="" aria-hidden="true">
 
 <div class="folha">
 
   <header class="capa">
-    <img class="borboleta entra entra--1" src="img/borboleta.gif" alt="" aria-hidden="true">
+    <img class="borboleta entra entra--1" src="img/borboleta-3.png" alt="" aria-hidden="true">
     <div class="rotulo entra entra--1">Imersão Mulheres Renovadas para Transformar</div>
   </header>
 
-  <main class="cartao painel entra entra--2">
+  <main class="painel vidro entra entra--desfocado entra--2">
 
-    <!-- Aguardando confirmação do pagamento -->
-    <div id="estado-carregando">
+    <!-- Aguardando confirmação -->
+    <div class="painel-zona ativa" id="estado-carregando">
       <div class="rodela"></div>
       <h1>Confirmando seu pagamento</h1>
-      <p>Isso pode levar alguns segundos. Não feche esta página.</p>
+      <div class="painel-texto">
+        <p>Isso pode levar alguns segundos. Não feche esta página.</p>
+      </div>
     </div>
 
     <!-- Pago -->
-    <div id="estado-pago" hidden>
-      <div class="simbolo">
+    <div class="painel-zona" id="estado-pago">
+      <div class="painel-icone">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M20 6 9 17l-5-5"></path>
         </svg>
       </div>
       <h1>Inscrição realizada <em>com sucesso!</em></h1>
-      <p id="mensagem-pago">Ficamos felizes em receber você na Imersão Mulheres Renovadas para Transformar.</p>
-      <p>Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação.</p>
-      <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
-
-      <dl class="resumo">
-        <div class="linha"><dt>Código da inscrição</dt><dd id="resumo-codigo">—</dd></div>
-        <div class="linha"><dt>Forma de pagamento</dt><dd id="resumo-forma">—</dd></div>
-        <div class="linha"><dt>Situação</dt><dd style="color:#3F7A5C">Pago</dd></div>
-      </dl>
-
-      <div class="acao">
-        <a class="botao" id="link-comprovante" href="#">Baixar comprovante</a>
+      <div class="painel-texto">
+        <p id="mensagem-pago">Ficamos felizes em receber você na Imersão Mulheres Renovadas para Transformar.</p>
+        <p>Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação.</p>
+        <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
       </div>
-      <p class="aviso-pagamento">Guarde o link desta página: ela mostra sua confirmação sempre que você voltar.</p>
+
+      <div class="painel-dados">
+        <dl class="resumo">
+          <div class="linha"><dt>Código da inscrição</dt><dd id="resumo-codigo">—</dd></div>
+          <div class="linha"><dt>Forma de pagamento</dt><dd id="resumo-forma">—</dd></div>
+          <div class="linha"><dt>Situação</dt><dd class="pago">Pago</dd></div>
+        </dl>
+      </div>
+
+      <div class="painel-acoes">
+        <a class="botao" id="link-comprovante" href="#">Baixar comprovante</a>
+        <p class="aviso-pagamento">Guarde o link desta página: ela mostra sua confirmação sempre que você voltar.</p>
+      </div>
     </div>
 
     <!-- Pagamento recusado -->
-    <div id="estado-falhou" hidden>
-      <div class="simbolo" style="color:#B42318;background:rgba(180,35,24,0.09)">
+    <div class="painel-zona" id="estado-falhou">
+      <div class="painel-icone painel-icone--alerta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path>
         </svg>
       </div>
       <h1>Pagamento não aprovado</h1>
-      <p id="mensagem-falha">Não foi possível confirmar seu pagamento.</p>
-      <p>Seus dados já estão guardados — é só gerar um novo pagamento para concluir a inscrição.</p>
-      <div class="acao">
+      <div class="painel-texto">
+        <p id="mensagem-falha">Não foi possível confirmar seu pagamento.</p>
+        <p>Seus dados já estão guardados — é só gerar um novo pagamento para concluir a inscrição.</p>
+      </div>
+      <div class="painel-acoes">
         <button class="botao" type="button" id="botao-tentar">Tentar pagamento novamente</button>
       </div>
     </div>
 
     <!-- Link expirado -->
-    <div id="estado-expirado" hidden>
-      <div class="simbolo" style="color:#8C6D1F;background:rgba(201,169,110,0.18)">
+    <div class="painel-zona" id="estado-expirado">
+      <div class="painel-icone painel-icone--espera">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>
         </svg>
       </div>
       <h1>Link de pagamento expirado</h1>
-      <p>O prazo para pagamento desta inscrição acabou, mas seus dados continuam guardados.</p>
-      <div class="acao">
+      <div class="painel-texto">
+        <p>O prazo para pagamento desta inscrição acabou, mas seus dados continuam guardados.</p>
+      </div>
+      <div class="painel-acoes">
         <button class="botao" type="button" id="botao-novo-link">Gerar novo link de pagamento</button>
       </div>
     </div>
 
     <!-- Demorando mais que o normal -->
-    <div id="estado-demorando" hidden>
-      <div class="simbolo">
+    <div class="painel-zona" id="estado-demorando">
+      <div class="painel-icone painel-icone--espera">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>
         </svg>
       </div>
       <h1>Ainda estamos confirmando</h1>
-      <p>Isso está demorando mais que o normal. Guarde este link e volte a esta mesma página em alguns minutos — ela mostrará a confirmação assim que o pagamento for identificado.</p>
-      <div class="acao">
+      <div class="painel-texto">
+        <p>Isso está demorando mais que o normal. Guarde este link e volte a esta mesma página em alguns minutos — ela mostrará a confirmação assim que o pagamento for identificado.</p>
+      </div>
+      <div class="painel-acoes">
         <button class="botao botao--suave" type="button" id="botao-verificar">Verificar novamente</button>
       </div>
     </div>
 
     <!-- Link sem código -->
-    <div id="estado-erro" hidden>
-      <div class="simbolo" style="color:#B42318;background:rgba(180,35,24,0.09)">
+    <div class="painel-zona" id="estado-erro">
+      <div class="painel-icone painel-icone--alerta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path>
         </svg>
       </div>
       <h1>Link inválido</h1>
-      <p>Não encontramos um código de inscrição neste link. Faça sua inscrição novamente ou fale com a coordenação.</p>
-      <div class="acao">
+      <div class="painel-texto">
+        <p>Não encontramos um código de inscrição neste link. Faça sua inscrição novamente ou fale com a coordenação.</p>
+      </div>
+      <div class="painel-acoes">
         <a class="botao botao--suave" href="index.html">Ir para a ficha de inscrição</a>
       </div>
     </div>
@@ -127,6 +141,7 @@
 
 <script src="config.js"></script>
 <script src="api.js"></script>
+<script src="animacoes.js?v=2"></script>
 <script>
 (function () {
   var codigo = new URLSearchParams(window.location.search).get('ref');
@@ -136,7 +151,7 @@
 
   function mostrar(id) {
     ESTADOS.forEach(function (elId) {
-      document.getElementById(elId).hidden = (elId !== id);
+      document.getElementById(elId).classList.toggle('ativa', elId === id);
     });
   }
 
