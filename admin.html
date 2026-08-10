@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body class="admin">
 
@@ -24,7 +24,19 @@
       </div>
       <div>
         <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" autocomplete="current-password" required>
+        <div class="campo-senha">
+          <input type="password" id="senha" name="senha" autocomplete="current-password" required>
+          <button type="button" class="botao-olho" id="botao-olho" aria-label="Mostrar senha" aria-pressed="false">
+            <svg id="icone-olho-aberto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg id="icone-olho-fechado" hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.36 18.36 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a18.42 18.42 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
       </div>
       <button type="submit" class="botao" id="botao-entrar">Entrar</button>
       <div class="admin-erro" id="erro-login" role="alert"></div>
@@ -95,6 +107,10 @@
   var botaoSair = document.getElementById('botao-sair');
   var botaoExcel = document.getElementById('botao-excel');
   var contador = document.getElementById('contador');
+  var botaoOlho = document.getElementById('botao-olho');
+  var campoSenha = document.getElementById('senha');
+  var iconeOlhoAberto = document.getElementById('icone-olho-aberto');
+  var iconeOlhoFechado = document.getElementById('icone-olho-fechado');
 
   /* Colunas exibidas — 1ª posição é a chave que vem da API, 2ª só é usada
      para saber quais são texto longo (title com o texto inteiro no hover). */
@@ -161,6 +177,15 @@
     link.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
   }
+
+  botaoOlho.addEventListener('click', function () {
+    var vaiMostrar = campoSenha.type === 'password';
+    campoSenha.type = vaiMostrar ? 'text' : 'password';
+    iconeOlhoAberto.hidden = vaiMostrar;
+    iconeOlhoFechado.hidden = !vaiMostrar;
+    botaoOlho.setAttribute('aria-label', vaiMostrar ? 'Esconder senha' : 'Mostrar senha');
+    botaoOlho.setAttribute('aria-pressed', vaiMostrar ? 'true' : 'false');
+  });
 
   formLogin.addEventListener('submit', function (evento) {
     evento.preventDefault();

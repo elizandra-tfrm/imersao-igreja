@@ -29,6 +29,11 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Garante que o atributo "hidden" do HTML sempre vence, mesmo quando algum
+   componente define display:flex/block na mesma classe (ex: .admin-login)
+   — sem isso, o elemento "escondido" continua aparecendo. */
+[hidden] { display: none !important; }
+
 /* Técnica de responsividade da landing: encolher a base rem inteira
    em telas pequenas, em vez de dezenas de media queries pontuais. */
 @media (max-width: 400px) { html { font-size: 14.5px; } }
@@ -1197,6 +1202,28 @@ body.admin {
   font-size: 0.85rem;
   min-height: 1.2em;
 }
+
+.campo-senha { position: relative; }
+.campo-senha input { padding-right: 2.6rem; }
+
+.botao-olho {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 0.4rem;
+}
+.botao-olho:hover { color: var(--lavender); background: rgba(123,94,167,0.08); }
+.botao-olho:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; }
 
 /* ── Cabeçalho do painel ─────────────────────────────────── */
 
