@@ -3,76 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Comprovante de Pagamento</title>
+<title>Comprovante de pagamento — Imersão Mulheres Renovadas para Transformar</title>
+<link rel="icon" href="img/borboleta.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="cartao centralizado">
+<div class="folha">
+
+  <header class="capa">
+    <img class="borboleta" src="img/borboleta.png" alt="" aria-hidden="true">
+    <div class="rotulo">Imersão Mulheres Renovadas para Transformar</div>
+  </header>
+
+  <main class="cartao painel">
+
     <div id="estado-carregando">
-      <div class="spinner"></div>
-      <h1>Preparando seu comprovante...</h1>
+      <div class="rodela"></div>
+      <h1>Preparando seu comprovante</h1>
+      <p>Só um instante.</p>
     </div>
 
-    <div id="estado-pronto" style="display:none;">
-      <div class="icone-grande">🧾</div>
-      <h1>Comprovante de pagamento</h1>
-      <p class="subtitulo" id="mensagem-pronto">Seu comprovante está pronto para download.</p>
-      <a class="botao" id="link-download" href="#">Baixar comprovante (PDF)</a>
-      <a class="botao secundario" id="link-voltar">Voltar à inscrição</a>
+    <div id="estado-pronto" hidden>
+      <div class="simbolo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z"></path>
+          <path d="M14 2v6h6M9 13h6M9 17h4"></path>
+        </svg>
+      </div>
+      <h1>Comprovante de <em>pagamento</em></h1>
+      <p id="mensagem-pronto">Seu comprovante está pronto para download.</p>
+
+      <div class="acao">
+        <a class="botao" id="link-download" href="#">Baixar comprovante (PDF)</a>
+        <a class="botao botao--suave" id="link-voltar" href="sucesso.html">Voltar à confirmação</a>
+      </div>
+      <p class="aviso-pagamento">Se o download não começar sozinho, use o botão acima.</p>
     </div>
 
-    <div id="estado-erro" style="display:none;">
-      <div class="icone-grande">⚠️</div>
+    <div id="estado-erro" hidden>
+      <div class="simbolo" style="color:#8C6D1F;background:rgba(201,169,110,0.18)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path>
+        </svg>
+      </div>
       <h1>Comprovante indisponível</h1>
-      <p class="subtitulo" id="mensagem-erro"></p>
-      <a class="botao secundario" id="link-voltar-erro">Voltar à inscrição</a>
+      <p id="mensagem-erro"></p>
+      <div class="acao">
+        <a class="botao botao--suave" id="link-voltar-erro" href="sucesso.html">Voltar à confirmação</a>
+      </div>
     </div>
-  </div>
 
-  <script src="config.js"></script>
-  <script src="api.js"></script>
-  <script>
-    var codigo = new URLSearchParams(window.location.search).get('ref');
-    var linkVoltarHref = 'sucesso.html?ref=' + encodeURIComponent(codigo || '');
-    document.getElementById('link-voltar').href = linkVoltarHref;
-    document.getElementById('link-voltar-erro').href = linkVoltarHref;
+  </main>
 
-    function base64ParaBlob(base64, mime) {
-      var byteChars = atob(base64);
-      var byteNumbers = new Array(byteChars.length);
-      for (var i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-      return new Blob([new Uint8Array(byteNumbers)], { type: mime });
-    }
+  <p class="rodape">
+    Dúvidas? Fale com a Lilian no WhatsApp <a href="https://wa.me/5567996083444" target="_blank" rel="noopener">(67) 99608-3444</a>
+  </p>
 
-    function mostrarErro(mensagem) {
-      document.getElementById('estado-carregando').style.display = 'none';
-      document.getElementById('mensagem-erro').textContent = mensagem;
-      document.getElementById('estado-erro').style.display = 'block';
-    }
+</div>
 
-    if (!codigo) {
-      mostrarErro('Link inválido.');
-    } else {
-      apiGet('obterComprovante', { ref: codigo }).then(function (resp) {
-        if (!resp.ok) {
-          mostrarErro(resp.mensagem || 'Não foi possível carregar o comprovante.');
-          return;
-        }
-        var blob = base64ParaBlob(resp.base64, 'application/pdf');
-        var url = URL.createObjectURL(blob);
-        var link = document.getElementById('link-download');
-        link.href = url;
-        link.setAttribute('download', resp.nomeArquivo);
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+(function () {
+  var codigo = new URLSearchParams(window.location.search).get('ref');
 
+  /* O botão de voltar precisa levar o mesmo código adiante; sem ele a página
+     de confirmação não sabe qual inscrição mostrar. */
+  var destinoVoltar = codigo
+    ? 'sucesso.html?ref=' + encodeURIComponent(codigo)
+    : 'index.html';
+  document.getElementById('link-voltar').href = destinoVoltar;
+  document.getElementById('link-voltar-erro').href = destinoVoltar;
+  if (!codigo) {
+    document.getElementById('link-voltar-erro').textContent = 'Ir para a ficha de inscrição';
+  }
+
+  function mostrar(id) {
+    ['estado-carregando', 'estado-pronto', 'estado-erro'].forEach(function (elId) {
+      document.getElementById(elId).hidden = (elId !== id);
+    });
+  }
+
+  function mostrarErro(mensagem) {
+    document.getElementById('mensagem-erro').textContent = mensagem;
+    mostrar('estado-erro');
+  }
+
+  function base64ParaBlob(base64, mime) {
+    var bytes = atob(base64);
+    var numeros = new Uint8Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) numeros[i] = bytes.charCodeAt(i);
+    return new Blob([numeros], { type: mime });
+  }
+
+  if (!codigo) {
+    mostrarErro('Este link não traz o código da inscrição. Abra o comprovante pela página de confirmação.');
+    return;
+  }
+
+  apiGet('obterComprovante', { ref: codigo })
+    .then(function (resp) {
+      if (!resp.ok) {
+        mostrarErro(resp.mensagem || 'Não foi possível carregar o comprovante.');
+        return;
+      }
+
+      var url = URL.createObjectURL(base64ParaBlob(resp.base64, 'application/pdf'));
+      var link = document.getElementById('link-download');
+      link.href = url;
+      link.setAttribute('download', resp.nomeArquivo);
+
+      if (resp.nome) {
         document.getElementById('mensagem-pronto').textContent =
-          'Olá' + (resp.nome ? ', ' + resp.nome : '') + '! Seu comprovante está pronto para download.';
-        document.getElementById('estado-carregando').style.display = 'none';
-        document.getElementById('estado-pronto').style.display = 'block';
-        link.click(); // baixa automaticamente; o botão continua disponível caso o navegador bloqueie.
-      }).catch(function () {
-        mostrarErro('Erro inesperado ao carregar o comprovante.');
-      });
-    }
-  </script>
+          'Olá, ' + resp.nome.split(' ')[0] + '! Seu comprovante está pronto para download.';
+      }
+      mostrar('estado-pronto');
+      link.click(); // baixa sozinho; o botão continua ali caso o navegador bloqueie
+    })
+    .catch(function () {
+      mostrarErro('Não conseguimos falar com o servidor. Verifique sua conexão e tente novamente.');
+    });
+})();
+</script>
 </body>
 </html>

@@ -3,130 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Confirmando inscrição</title>
+<title>Confirmação da inscrição — Imersão Mulheres Renovadas para Transformar</title>
+<link rel="icon" href="img/borboleta.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="cartao centralizado">
+<div class="folha">
+
+  <header class="capa">
+    <img class="borboleta" src="img/borboleta.png" alt="" aria-hidden="true">
+    <div class="rotulo">Imersão Mulheres Renovadas para Transformar</div>
+  </header>
+
+  <main class="cartao painel">
+
+    <!-- Aguardando confirmação do pagamento -->
     <div id="estado-carregando">
-      <div class="spinner"></div>
-      <h1>Confirmando seu pagamento...</h1>
-      <p class="subtitulo">Isso pode levar alguns segundos.</p>
+      <div class="rodela"></div>
+      <h1>Confirmando seu pagamento</h1>
+      <p>Isso pode levar alguns segundos. Não feche esta página.</p>
     </div>
 
-    <div id="estado-pago" style="display:none;">
-      <div class="icone-grande">✅</div>
-      <h1>Inscrição realizada com sucesso!</h1>
-      <p class="subtitulo" id="mensagem-pago">Ficamos felizes em receber você.</p>
-      <p class="subtitulo">Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação. Nos vemos no dia 05 de setembro de 2026!</p>
-      <a class="botao" id="link-comprovante" href="#">Baixar comprovante</a>
+    <!-- Pago -->
+    <div id="estado-pago" hidden>
+      <div class="simbolo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+      </div>
+      <h1>Inscrição realizada <em>com sucesso!</em></h1>
+      <p id="mensagem-pago">Ficamos felizes em receber você na Imersão Mulheres Renovadas para Transformar.</p>
+      <p>Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação.</p>
+      <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
+
+      <dl class="resumo">
+        <div class="linha"><dt>Código da inscrição</dt><dd id="resumo-codigo">—</dd></div>
+        <div class="linha"><dt>Forma de pagamento</dt><dd id="resumo-forma">—</dd></div>
+        <div class="linha"><dt>Situação</dt><dd style="color:#3F7A5C">Pago</dd></div>
+      </dl>
+
+      <div class="acao">
+        <a class="botao" id="link-comprovante" href="#">Baixar comprovante</a>
+      </div>
+      <p class="aviso-pagamento">Guarde o link desta página: ela mostra sua confirmação sempre que você voltar.</p>
     </div>
 
-    <div id="estado-falhou" style="display:none;">
-      <div class="icone-grande">⚠️</div>
+    <!-- Pagamento recusado -->
+    <div id="estado-falhou" hidden>
+      <div class="simbolo" style="color:#B42318;background:rgba(180,35,24,0.09)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path>
+        </svg>
+      </div>
       <h1>Pagamento não aprovado</h1>
-      <p class="subtitulo" id="mensagem-falha">Não foi possível confirmar seu pagamento.</p>
-      <a class="botao" href="#" id="link-tentar-novamente">Tentar novamente</a>
+      <p id="mensagem-falha">Não foi possível confirmar seu pagamento.</p>
+      <p>Seus dados já estão guardados — é só gerar um novo pagamento para concluir a inscrição.</p>
+      <div class="acao">
+        <button class="botao" type="button" id="botao-tentar">Tentar pagamento novamente</button>
+      </div>
     </div>
 
-    <div id="estado-expirado" style="display:none;">
-      <div class="icone-grande">⏰</div>
+    <!-- Link expirado -->
+    <div id="estado-expirado" hidden>
+      <div class="simbolo" style="color:#8C6D1F;background:rgba(201,169,110,0.18)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>
+        </svg>
+      </div>
       <h1>Link de pagamento expirado</h1>
-      <p class="subtitulo">O prazo para pagamento dessa inscrição acabou.</p>
-      <a class="botao" href="#" id="link-gerar-novo">Gerar novo link de pagamento</a>
+      <p>O prazo para pagamento desta inscrição acabou, mas seus dados continuam guardados.</p>
+      <div class="acao">
+        <button class="botao" type="button" id="botao-novo-link">Gerar novo link de pagamento</button>
+      </div>
     </div>
 
-    <div id="estado-demorando" style="display:none;">
-      <div class="icone-grande">🕒</div>
+    <!-- Demorando mais que o normal -->
+    <div id="estado-demorando" hidden>
+      <div class="simbolo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>
+        </svg>
+      </div>
       <h1>Ainda estamos confirmando</h1>
-      <p class="subtitulo">Isso está demorando mais que o normal. Guarde este link e volte a esta mesma página em alguns minutos — ela vai mostrar a confirmação assim que o pagamento cair.</p>
+      <p>Isso está demorando mais que o normal. Guarde este link e volte a esta mesma página em alguns minutos — ela mostrará a confirmação assim que o pagamento for identificado.</p>
+      <div class="acao">
+        <button class="botao botao--suave" type="button" id="botao-verificar">Verificar novamente</button>
+      </div>
     </div>
 
-    <div id="estado-erro" style="display:none;">
-      <div class="icone-grande">❌</div>
+    <!-- Link sem código -->
+    <div id="estado-erro" hidden>
+      <div class="simbolo" style="color:#B42318;background:rgba(180,35,24,0.09)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path>
+        </svg>
+      </div>
       <h1>Link inválido</h1>
-      <p class="subtitulo">Não encontramos um código de inscrição nesse link.</p>
+      <p>Não encontramos um código de inscrição neste link. Faça sua inscrição novamente ou fale com a coordenação.</p>
+      <div class="acao">
+        <a class="botao botao--suave" href="index.html">Ir para a ficha de inscrição</a>
+      </div>
     </div>
-  </div>
 
-  <script src="config.js"></script>
-  <script src="api.js"></script>
-  <script>
-    var codigo = new URLSearchParams(window.location.search).get('ref');
-    var tentativas = 0;
-    var MAX_TENTATIVAS = 20; // ~60s de polling (3s cada)
+  </main>
 
-    function mostrarEstado(id) {
-      ['estado-carregando', 'estado-pago', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro']
-        .forEach(function (elId) {
-          document.getElementById(elId).style.display = (elId === id) ? 'block' : 'none';
-        });
-    }
+  <p class="rodape">
+    Dúvidas? Fale com a Lilian no WhatsApp <a href="https://wa.me/5567996083444" target="_blank" rel="noopener">(67) 99608-3444</a>
+  </p>
 
-    function verificar() {
-      apiGet('consultarStatusInscricao', { codigo: codigo })
-        .then(aoReceber)
-        .catch(function () { agendarProximaChecagem(); });
-    }
+</div>
 
-    function agendarProximaChecagem() {
-      tentativas++;
-      if (tentativas >= MAX_TENTATIVAS) {
-        mostrarEstado('estado-demorando');
-        return;
-      }
-      setTimeout(verificar, 3000);
-    }
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+(function () {
+  var codigo = new URLSearchParams(window.location.search).get('ref');
+  var tentativas = 0;
+  var MAX_TENTATIVAS = 20; // ~60s (3s cada)
+  var ESTADOS = ['estado-carregando', 'estado-pago', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro'];
 
-    function aoReceber(resposta) {
-      if (resposta.status === 'Pago') {
+  function mostrar(id) {
+    ESTADOS.forEach(function (elId) {
+      document.getElementById(elId).hidden = (elId !== id);
+    });
+  }
+
+  var NOME_FORMA = { PIX: 'Pix', CREDIT_CARD: 'Cartão de crédito', BOLETO: 'Boleto' };
+
+  function aoReceber(resposta) {
+    if (resposta.status === 'Pago') {
+      if (resposta.nome) {
         document.getElementById('mensagem-pago').textContent =
-          'Obrigado' + (resposta.nome ? ', ' + resposta.nome : '') + '! Sua inscrição na Imersão Mulheres Renovadas para Transformar está confirmada.';
-        document.getElementById('link-comprovante').href = 'comprovante.html?ref=' + encodeURIComponent(codigo);
-        mostrarEstado('estado-pago');
-        return;
+          'Ficamos felizes em receber você, ' + resposta.nome.split(' ')[0] + '!';
       }
-      if (resposta.status === 'Falhou') {
-        document.getElementById('mensagem-falha').textContent = resposta.erro || 'Pagamento recusado.';
-        document.getElementById('link-tentar-novamente').onclick = function (ev) {
-          ev.preventDefault();
-          tentarNovamente();
-        };
-        mostrarEstado('estado-falhou');
-        return;
-      }
-      if (resposta.status === 'Expirado') {
-        document.getElementById('link-gerar-novo').onclick = function (ev) {
-          ev.preventDefault();
-          tentarNovamente();
-        };
-        mostrarEstado('estado-expirado');
-        return;
-      }
-      // Pendente / NaoEncontrado (ainda propagando) -> continua tentando
-      agendarProximaChecagem();
+      document.getElementById('resumo-codigo').textContent = codigo;
+      document.getElementById('resumo-forma').textContent = NOME_FORMA[resposta.formaPagamento] || resposta.formaPagamento || '—';
+      document.getElementById('link-comprovante').href = 'comprovante.html?ref=' + encodeURIComponent(codigo);
+      mostrar('estado-pago');
+      return;
     }
+    if (resposta.status === 'Falhou') {
+      document.getElementById('mensagem-falha').textContent = resposta.erro || 'Pagamento recusado pela operadora.';
+      mostrar('estado-falhou');
+      return;
+    }
+    if (resposta.status === 'Expirado' || resposta.status === 'Cancelado') {
+      mostrar('estado-expirado');
+      return;
+    }
+    agendarProxima(); // Pendente / ainda propagando
+  }
 
-    function tentarNovamente() {
-      mostrarEstado('estado-carregando');
-      apiPost('reiniciarPagamento', { codigo: codigo }).then(function (resp) {
-        if (resp.ok) {
-          window.location.href = resp.paymentUrl;
-        } else {
-          alert(resp.mensagem || 'Não foi possível gerar um novo link de pagamento.');
-          mostrarEstado('estado-falhou');
-        }
-      }).catch(function () {
+  function verificar() {
+    apiGet('consultarStatusInscricao', { codigo: codigo })
+      .then(aoReceber)
+      .catch(agendarProxima);
+  }
+
+  function agendarProxima() {
+    tentativas++;
+    if (tentativas >= MAX_TENTATIVAS) { mostrar('estado-demorando'); return; }
+    setTimeout(verificar, 3000);
+  }
+
+  function gerarNovoPagamento(botao) {
+    var textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Gerando...';
+    apiPost('reiniciarPagamento', { codigo: codigo })
+      .then(function (resp) {
+        if (resp.ok) { window.location.href = resp.paymentUrl; return; }
+        alert(resp.mensagem || 'Não foi possível gerar um novo link de pagamento.');
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+      })
+      .catch(function () {
         alert('Erro inesperado. Tente novamente em instantes.');
-        mostrarEstado('estado-falhou');
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
       });
-    }
+  }
 
-    if (!codigo) {
-      mostrarEstado('estado-erro');
-    } else {
-      verificar(); // primeira checagem imediata (cobre o caso do webhook já ter confirmado antes do redirect)
-    }
-  </script>
+  document.getElementById('botao-tentar').addEventListener('click', function () { gerarNovoPagamento(this); });
+  document.getElementById('botao-novo-link').addEventListener('click', function () { gerarNovoPagamento(this); });
+  document.getElementById('botao-verificar').addEventListener('click', function () {
+    tentativas = 0;
+    mostrar('estado-carregando');
+    verificar();
+  });
+
+  if (!codigo) { mostrar('estado-erro'); } else { verificar(); }
+})();
+</script>
 </body>
 </html>
