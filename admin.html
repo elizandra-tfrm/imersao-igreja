@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel administrativo — Imersão Mulheres Renovadas para Transformar</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=12">
+</head>
+<body class="admin">
+
+  <!-- ── Login ─────────────────────────────────────────────── -->
+  <div class="vidro admin-login" id="tela-login">
+    <h1>Painel administrativo</h1>
+    <p class="sub">Imersão Mulheres Renovadas para Transformar</p>
+    <form id="form-login">
+      <div>
+        <label for="usuario">Usuário</label>
+        <input type="text" id="usuario" name="usuario" autocomplete="username" required>
+      </div>
+      <div>
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="botao" id="botao-entrar">Entrar</button>
+      <div class="admin-erro" id="erro-login" role="alert"></div>
+    </form>
+  </div>
+
+  <!-- ── Painel ────────────────────────────────────────────── -->
+  <div id="tela-painel" hidden>
+    <div class="admin-cabecalho">
+      <div>
+        <h1>Inscrições</h1>
+        <div class="contador" id="contador">Carregando...</div>
+      </div>
+      <div class="admin-acoes-topo">
+        <input type="search" id="busca" placeholder="Buscar por nome, código, e-mail...">
+        <button type="button" class="botao-mini" id="botao-excel">Exportar Excel</button>
+        <button type="button" class="botao-mini botao-mini--sair" id="botao-sair">Sair</button>
+      </div>
+    </div>
+
+    <div class="admin-tabela-wrap">
+      <table class="admin-tabela">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Apelido</th>
+            <th>Idade</th>
+            <th>Estado civil</th>
+            <th>Filhos</th>
+            <th>Qtos</th>
+            <th>Igreja</th>
+            <th>Qual igreja</th>
+            <th>E-mail</th>
+            <th>CPF</th>
+            <th>Telefone</th>
+            <th>Status</th>
+            <th>Pagamento</th>
+            <th>Inscrito em</th>
+            <th>Pago em</th>
+            <th>Vida com Deus</th>
+            <th>Área de cura</th>
+            <th>Motivação</th>
+            <th>Expectativa</th>
+            <th>Necessidade de apoio</th>
+            <th>Ficha</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-tabela"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+(function () {
+  var token = null;
+  var todasInscricoes = [];
+
+  var telaLogin = document.getElementById('tela-login');
+  var telaPainel = document.getElementById('tela-painel');
+  var formLogin = document.getElementById('form-login');
+  var botaoEntrar = document.getElementById('botao-entrar');
+  var erroLogin = document.getElementById('erro-login');
+  var corpoTabela = document.getElementById('corpo-tabela');
+  var campoBusca = document.getElementById('busca');
+  var botaoSair = document.getElementById('botao-sair');
+  var botaoExcel = document.getElementById('botao-excel');
+  var contador = document.getElementById('contador');
+
+  /* Colunas exibidas — 1ª posição é a chave que vem da API, 2ª só é usada
+     para saber quais são texto longo (title com o texto inteiro no hover). */
+  var COLUNAS = [
+    'codigo', 'nome', 'apelido', 'idade', 'estadoCivil',
+    'temFilhos', 'quantosFilhos', 'participaIgreja', 'qualIgreja',
+    'email', 'cpf', 'telefone', 'status', 'formaPagamento',
+    'dataInscricao', 'dataPagamento',
+    'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
+  ];
+  var COLUNAS_LONGAS = { vidaComDeus: true, areaCura: true, motivacao: true, expectativa: true, necessidadeApoio: true };
+  var SIM_NAO = { sim: 'Sim', nao: 'Não' };
+
+  function tokenSalvo() {
+    try { return sessionStorage.getItem('adminToken'); } catch (e) { return null; }
+  }
+  function salvarToken(t) {
+    try { sessionStorage.setItem('adminToken', t); } catch (e) { /* navegador sem sessionStorage — sessão só dura nesta execução */ }
+  }
+  function limparToken() {
+    try { sessionStorage.removeItem('adminToken'); } catch (e) {}
+  }
+
+  function mostrarLogin(mensagem) {
+    token = null;
+    limparToken();
+    telaPainel.hidden = true;
+    telaLogin.hidden = false;
+    erroLogin.textContent = mensagem || '';
+  }
+
+  function mostrarPainel() {
+    telaLogin.hidden = true;
+    telaPainel.hidden = false;
+    carregarInscricoes();
+  }
+
+  /** GET autenticado: junta o token e trata sessão expirada de forma central. */
+  function apiGetAdmin(action, extra) {
+    var params = Object.assign({ token: token }, extra || {});
+    return apiGet(action, params).then(function (resp) {
+      if (resp && resp.sessaoInvalida) {
+        mostrarLogin('Sessão expirada. Faça login novamente.');
+        return Promise.reject(new Error('sessao_invalida'));
+      }
+      return resp;
+    });
+  }
+
+  function base64ParaBlob(base64, mime) {
+    var bytes = atob(base64);
+    var numeros = new Uint8Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) numeros[i] = bytes.charCodeAt(i);
+    return new Blob([numeros], { type: mime });
+  }
+
+  function baixarArquivo(base64, nomeArquivo, mime) {
+    var url = URL.createObjectURL(base64ParaBlob(base64, mime));
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = nomeArquivo;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+  }
+
+  formLogin.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+    erroLogin.textContent = '';
+    botaoEntrar.disabled = true;
+    botaoEntrar.textContent = 'Entrando...';
+
+    var usuario = document.getElementById('usuario').value;
+    var senha = document.getElementById('senha').value;
+
+    apiPost('adminLogin', { usuario: usuario, senha: senha })
+      .then(function (resp) {
+        botaoEntrar.disabled = false;
+        botaoEntrar.textContent = 'Entrar';
+        if (!resp.ok) {
+          erroLogin.textContent = resp.mensagem || 'Não foi possível entrar.';
+          return;
+        }
+        token = resp.token;
+        salvarToken(token);
+        document.getElementById('senha').value = '';
+        mostrarPainel();
+      })
+      .catch(function () {
+        botaoEntrar.disabled = false;
+        botaoEntrar.textContent = 'Entrar';
+        erroLogin.textContent = 'Não conseguimos falar com o servidor. Tente novamente.';
+      });
+  });
+
+  botaoSair.addEventListener('click', function () { mostrarLogin(); });
+
+  botaoExcel.addEventListener('click', function () {
+    var textoOriginal = botaoExcel.textContent;
+    botaoExcel.disabled = true;
+    botaoExcel.textContent = 'Gerando...';
+    apiGetAdmin('adminExportarExcel')
+      .then(function (resp) {
+        botaoExcel.disabled = false;
+        botaoExcel.textContent = textoOriginal;
+        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível exportar.'); return; }
+        baixarArquivo(resp.base64, resp.nomeArquivo, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      })
+      .catch(function () {
+        botaoExcel.disabled = false;
+        botaoExcel.textContent = textoOriginal;
+      });
+  });
+
+  function carregarInscricoes() {
+    mostrarLinhaUnica('Carregando inscrições...');
+    apiGetAdmin('adminListarInscricoes')
+      .then(function (resp) {
+        if (!resp.ok) {
+          mostrarLinhaUnica(resp.mensagem || 'Não foi possível carregar as inscrições.');
+          return;
+        }
+        todasInscricoes = resp.inscricoes || [];
+        contador.textContent = todasInscricoes.length + ' inscrição(ões)';
+        renderizarTabela(todasInscricoes);
+      })
+      .catch(function () { /* sessão expirada já tratada em apiGetAdmin */ });
+  }
+
+  function mostrarLinhaUnica(texto) {
+    corpoTabela.textContent = '';
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = COLUNAS.length + 1;
+    td.textContent = texto;
+    tr.appendChild(td);
+    corpoTabela.appendChild(tr);
+  }
+
+  /**
+   * Monta a tabela inteira via DOM (createElement/textContent), nunca
+   * innerHTML: qualquer campo aqui vem do formulário público, que não exige
+   * login pra ninguém escrever na planilha — então pode conter texto
+   * malicioso. textContent nunca interpreta isso como HTML/script.
+   */
+  function renderizarTabela(lista) {
+    corpoTabela.textContent = '';
+
+    if (!lista.length) {
+      mostrarLinhaUnica('Nenhuma inscrição encontrada.');
+      return;
+    }
+
+    lista.forEach(function (item) {
+      var tr = document.createElement('tr');
+
+      COLUNAS.forEach(function (chave) {
+        var td = document.createElement('td');
+        var valor = item[chave];
+
+        if (chave === 'temFilhos' || chave === 'participaIgreja') {
+          valor = SIM_NAO[valor] || valor;
+        }
+
+        var texto = (valor === null || valor === undefined || valor === '') ? '—' : String(valor);
+        td.textContent = texto;
+
+        if (COLUNAS_LONGAS[chave]) {
+          td.className = 'coluna-longa';
+          td.title = texto;
+        }
+        if (chave === 'status') {
+          td.className = 'coluna-status status-' + String(item.status || '').toLowerCase();
+        }
+
+        tr.appendChild(td);
+      });
+
+      var tdAcao = document.createElement('td');
+      var botaoPdf = document.createElement('button');
+      botaoPdf.type = 'button';
+      botaoPdf.className = 'botao-pdf';
+      botaoPdf.textContent = 'PDF';
+      botaoPdf.addEventListener('click', function () { baixarFichaPdf(item.codigo, botaoPdf); });
+      tdAcao.appendChild(botaoPdf);
+      tr.appendChild(tdAcao);
+
+      corpoTabela.appendChild(tr);
+    });
+  }
+
+  function baixarFichaPdf(codigo, botao) {
+    var textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = '...';
+    apiGetAdmin('adminGerarFichaPdf', { codigo: codigo })
+      .then(function (resp) {
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
+        baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
+      })
+      .catch(function () {
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+      });
+  }
+
+  campoBusca.addEventListener('input', function () {
+    var termo = campoBusca.value.trim().toLowerCase();
+    if (!termo) { renderizarTabela(todasInscricoes); return; }
+    var filtradas = todasInscricoes.filter(function (item) {
+      return COLUNAS.some(function (chave) {
+        var valor = item[chave];
+        return valor && String(valor).toLowerCase().indexOf(termo) !== -1;
+      });
+    });
+    renderizarTabela(filtradas);
+  });
+
+  // Retoma a sessão se esta mesma aba já tinha um token válido guardado.
+  token = tokenSalvo();
+  if (token) mostrarPainel();
+})();
+</script>
+</body>
+</html>
