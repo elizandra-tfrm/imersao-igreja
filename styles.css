@@ -278,8 +278,9 @@ body::before {
    roxo com a borboleta grudada nela, "Transformar" em verde com o "para"
    pequeno e leve logo depois — igual à landing, não antes. */
 .titulo-eyebrow-interno {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font-family: var(--font-body);
   font-size: clamp(0.8rem, 2.4vw, 0.95rem);
