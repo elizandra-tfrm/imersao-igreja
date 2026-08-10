@@ -848,6 +848,82 @@ textarea { min-height: 92px; resize: vertical; line-height: 1.65; }
 
 @keyframes girar { to { transform: rotate(360deg); } }
 
+/* ===========================================================
+   Modo compacto — páginas de estado (confirmação/comprovante)
+   cabem inteiras na tela, centradas verticalmente, sem rolagem.
+   =========================================================== */
+
+body.compacta {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(0.75rem, 2vh, 1.5rem) clamp(1rem, 4vw, 1.5rem);
+}
+
+.compacta .folha { max-width: 640px; }
+
+.compacta .capa { padding-bottom: clamp(0.75rem, 2vh, 1.4rem); }
+.compacta .capa .borboleta { width: clamp(2.5rem, 6vh, 3.4rem); margin-bottom: 6px; }
+.compacta .rotulo { font-size: 0.6rem; }
+
+.compacta .painel {
+  padding: clamp(1.4rem, 4vh, 2.5rem) clamp(1.25rem, 4vw, 2.75rem);
+}
+
+.compacta .painel-icone {
+  width: clamp(2.9rem, 7vh, 3.6rem);
+  height: clamp(2.9rem, 7vh, 3.6rem);
+  margin-bottom: clamp(0.7rem, 2vh, 1.2rem);
+}
+.compacta .painel-icone svg { width: 45%; height: 45%; }
+
+.compacta .rodela {
+  width: 2.4rem; height: 2.4rem;
+  margin-bottom: clamp(0.7rem, 2vh, 1.2rem);
+}
+
+.compacta .painel h1 { font-size: clamp(1.45rem, 3.4vh, 2rem); }
+
+.compacta .painel-texto {
+  margin-top: clamp(0.6rem, 1.8vh, 1rem);
+  gap: clamp(0.35rem, 1vh, 0.6rem);
+}
+.compacta .painel-texto p { font-size: clamp(0.84rem, 1.9vh, 0.94rem); }
+.compacta .painel-texto .destaque { font-size: clamp(0.98rem, 2.2vh, 1.12rem); margin-top: 0; }
+
+.compacta .painel-dados { margin-top: clamp(0.9rem, 2.6vh, 1.6rem); }
+.compacta .resumo .linha { padding: clamp(0.5rem, 1.4vh, 0.7rem) 0.9rem; font-size: 0.84rem; }
+
+.compacta .painel-acoes {
+  margin-top: clamp(1rem, 2.8vh, 1.8rem);
+  gap: clamp(0.5rem, 1.4vh, 0.75rem);
+}
+.compacta .botao {
+  min-height: clamp(2.6rem, 6vh, 3rem);
+  padding: 0.7rem 1.75rem;
+  font-size: 0.88rem;
+}
+.compacta .botao--suave {
+  min-height: clamp(2.2rem, 5vh, 2.6rem);
+  padding: 0.5rem 1.4rem;
+  font-size: 0.68rem;
+}
+.compacta .painel-acoes .aviso-pagamento { margin-top: 2px; font-size: 0.73rem; }
+
+.compacta .rodape {
+  margin-top: clamp(0.7rem, 2vh, 1.25rem);
+  font-size: 0.73rem;
+  line-height: 1.6;
+}
+
+/* Em telas bem baixas, o texto longo de acolhimento sai de cena
+   (a informação essencial — confirmação, resumo e botões — fica). */
+@media (max-height: 720px) {
+  .compacta .ocultavel { display: none; }
+  .compacta .capa .borboleta { display: none; }
+}
+
 /* ── Movimento reduzido ──────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
