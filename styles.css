@@ -1328,13 +1328,6 @@ table.admin-tabela {
 .admin-tabela tbody tr:nth-child(even) { background: #FDFCFA; }
 .admin-tabela tbody tr:hover { background: rgba(123,94,167,0.06); }
 
-.admin-tabela td.coluna-longa {
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: help;
-}
-
 .admin-tabela td.coluna-status { white-space: nowrap; }
 .admin-tabela td.coluna-status::before {
   content: '';

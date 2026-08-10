@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body class="admin">
 
@@ -63,25 +63,14 @@
           <tr>
             <th>Código</th>
             <th>Nome</th>
-            <th>Apelido</th>
             <th>Idade</th>
             <th>Estado civil</th>
-            <th>Filhos</th>
-            <th>Qtos</th>
-            <th>Igreja</th>
-            <th>Qual igreja</th>
             <th>E-mail</th>
             <th>CPF</th>
-            <th>Telefone</th>
             <th>Status</th>
             <th>Pagamento</th>
             <th>Inscrito em</th>
             <th>Pago em</th>
-            <th>Vida com Deus</th>
-            <th>Área de cura</th>
-            <th>Motivação</th>
-            <th>Expectativa</th>
-            <th>Necessidade de apoio</th>
             <th>Ficha</th>
           </tr>
         </thead>
@@ -112,17 +101,21 @@
   var iconeOlhoAberto = document.getElementById('icone-olho-aberto');
   var iconeOlhoFechado = document.getElementById('icone-olho-fechado');
 
-  /* Colunas exibidas — 1ª posição é a chave que vem da API, 2ª só é usada
-     para saber quais são texto longo (title com o texto inteiro no hover). */
-  var COLUNAS = [
-    'codigo', 'nome', 'apelido', 'idade', 'estadoCivil',
-    'temFilhos', 'quantosFilhos', 'participaIgreja', 'qualIgreja',
-    'email', 'cpf', 'telefone', 'status', 'formaPagamento',
-    'dataInscricao', 'dataPagamento',
-    'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
+  /* Colunas mostradas na tabela — resumidas a pedido: o dado completo (todas
+     as respostas) continua disponível pelo botão Excel e pelo PDF da ficha,
+     que não dependem desta lista. */
+  var COLUNAS_TABELA = [
+    'codigo', 'nome', 'idade', 'estadoCivil',
+    'email', 'cpf', 'status', 'formaPagamento',
+    'dataInscricao', 'dataPagamento'
   ];
-  var COLUNAS_LONGAS = { vidaComDeus: true, areaCura: true, motivacao: true, expectativa: true, necessidadeApoio: true };
-  var SIM_NAO = { sim: 'Sim', nao: 'Não' };
+
+  /* Campos usados na busca — mais amplos que as colunas exibidas, pra ainda
+     dar pra achar alguém pelo telefone, igreja, respostas, etc. */
+  var CAMPOS_BUSCA = COLUNAS_TABELA.concat([
+    'apelido', 'temFilhos', 'quantosFilhos', 'participaIgreja', 'qualIgreja',
+    'telefone', 'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
+  ]);
 
   function tokenSalvo() {
     try { return sessionStorage.getItem('adminToken'); } catch (e) { return null; }
@@ -254,7 +247,7 @@
     corpoTabela.textContent = '';
     var tr = document.createElement('tr');
     var td = document.createElement('td');
-    td.colSpan = COLUNAS.length + 1;
+    td.colSpan = COLUNAS_TABELA.length + 1;
     td.textContent = texto;
     tr.appendChild(td);
     corpoTabela.appendChild(tr);
@@ -277,21 +270,13 @@
     lista.forEach(function (item) {
       var tr = document.createElement('tr');
 
-      COLUNAS.forEach(function (chave) {
+      COLUNAS_TABELA.forEach(function (chave) {
         var td = document.createElement('td');
         var valor = item[chave];
-
-        if (chave === 'temFilhos' || chave === 'participaIgreja') {
-          valor = SIM_NAO[valor] || valor;
-        }
 
         var texto = (valor === null || valor === undefined || valor === '') ? '—' : String(valor);
         td.textContent = texto;
 
-        if (COLUNAS_LONGAS[chave]) {
-          td.className = 'coluna-longa';
-          td.title = texto;
-        }
         if (chave === 'status') {
           td.className = 'coluna-status status-' + String(item.status || '').toLowerCase();
         }
@@ -333,7 +318,7 @@
     var termo = campoBusca.value.trim().toLowerCase();
     if (!termo) { renderizarTabela(todasInscricoes); return; }
     var filtradas = todasInscricoes.filter(function (item) {
-      return COLUNAS.some(function (chave) {
+      return CAMPOS_BUSCA.some(function (chave) {
         var valor = item[chave];
         return valor && String(valor).toLowerCase().indexOf(termo) !== -1;
       });
