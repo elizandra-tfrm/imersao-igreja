@@ -118,6 +118,64 @@ body {
   .borboleta-fundo--1 { opacity: 0.15; }
 }
 
+/* Ramos de lavanda flutuantes — o mesmo SVG "LavenderSprig" e a mesma
+   animação floatPetal da landing (QuoteSection), só que espalhados
+   nos cantos ao longo de toda a página, não só numa seção. */
+.ramo {
+  position: fixed;
+  z-index: -1;
+  width: 24px;
+  height: auto;
+  opacity: 0.24;
+  pointer-events: none;
+  animation: flutuarRamo 6.8s ease-in-out infinite;
+}
+@keyframes flutuarRamo {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); opacity: 0.4; }
+  50%      { transform: translateY(-22px) rotate(calc(var(--rot, 0deg) + 8deg)); opacity: 0.78; }
+}
+.ramo--1 { top: 6%;    left: 2.5%;  width: 27px; --rot: -12deg; animation-duration: 6.8s; }
+.ramo--2 { top: 8%;    right: 3.5%; width: 22px; --rot: 10deg;  animation-duration: 7.6s; animation-delay: -2.4s; }
+.ramo--3 { bottom: 9%; left: 3.5%;  width: 20px; --rot: -8deg;  animation-duration: 6.1s; animation-delay: -4.2s; }
+.ramo--4 { bottom: 7%; right: 4.5%; width: 25px; --rot: 12deg;  animation-duration: 7.9s; animation-delay: -1.1s; }
+
+/* Faíscas — pontinhos de brilho lavanda/dourado (ORBS da landing) */
+.faisca {
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: cintilarFaisca 6s ease-in-out infinite;
+}
+@keyframes cintilarFaisca {
+  0%, 100%  { opacity: 0;    transform: scale(0.4) translateY(0); }
+  30%       { opacity: 1;    transform: scale(1) translateY(-8px); }
+  60%       { opacity: 0.6;  transform: scale(0.8) translateY(-14px); }
+}
+.faisca--1 {
+  top: 26%; left: 8%; width: 5px; height: 5px;
+  background: radial-gradient(circle, #C4ADE0 0%, transparent 70%);
+  box-shadow: 0 0 15px 5px rgba(196,173,224,0.32);
+  animation-duration: 5.5s;
+}
+.faisca--2 {
+  top: 62%; right: 9%; width: 4px; height: 4px;
+  background: radial-gradient(circle, #D4B87A 0%, transparent 70%);
+  box-shadow: 0 0 12px 4px rgba(212,184,122,0.3);
+  animation-duration: 7s; animation-delay: -2.5s;
+}
+.faisca--3 {
+  top: 44%; left: 49%; width: 3px; height: 3px;
+  background: radial-gradient(circle, #B89FD4 0%, transparent 70%);
+  box-shadow: 0 0 10px 3px rgba(184,159,212,0.28);
+  animation-duration: 8s; animation-delay: -1s;
+}
+
+@media (max-width: 720px) {
+  .ramo--2, .ramo--4, .faisca--3 { display: none; }
+  .ramo--1, .ramo--3 { opacity: 0.16; }
+}
+
 /* ── Coluna central ──────────────────────────────────────── */
 
 .folha {
@@ -293,6 +351,60 @@ body {
   .vidro:hover::after { transform: scaleX(1); }
 }
 
+/* ── Seção "noturna" — mesmo roxo profundo do QuoteSection/BuySection
+   da landing, usada só na seção de informações da imersão para dar
+   o contraste/drama que o resto (cartões claros) não tem. ────── */
+
+.secao--noite {
+  position: relative;
+  color: #F1E9FA;
+  background: linear-gradient(148deg, #1A1030 0%, #2A1A44 35%, #52358A 72%, #7B5EA7 100%);
+  border: 1px solid rgba(196, 173, 224, 0.25);
+  box-shadow: 0 28px 64px rgba(26, 16, 48, 0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.secao--noite::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 90% 70% at 50% 25%, rgba(123,94,167,0.35), transparent 65%);
+  pointer-events: none;
+}
+
+.secao--noite .secao-fantasma { color: #FFFFFF; opacity: 0.055; }
+.secao--noite .secao-rotulo { color: rgba(212, 184, 122, 0.9); }
+.secao--noite .secao-cabeca h2 { color: #FFFFFF; }
+
+.secao--noite .dado { border-bottom-color: rgba(196, 173, 224, 0.18); }
+.secao--noite .dado dt { color: rgba(196, 173, 224, 0.78); }
+.secao--noite .dado dd { color: #F1E9FA; }
+.secao--noite .dado dd .sub { color: rgba(196, 173, 224, 0.65); }
+.secao--noite .dado:hover { background: rgba(255,255,255,0.03); }
+.secao--noite .dado dd a { color: #E3D2AE; border-bottom-color: rgba(212, 184, 122, 0.5); }
+.secao--noite .dado dd a:hover { border-bottom-color: #D4B87A; color: #F0DFB0; }
+
+/* Estrelinhas discretas, só dentro dessa seção — mesmo espírito do
+   céu noturno das seções escuras da landing. */
+.secao--noite .estrela {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: cintilarFaisca 6s ease-in-out infinite;
+}
+.secao--noite .estrela--1 {
+  top: 14%; right: 12%; width: 4px; height: 4px;
+  background: radial-gradient(circle, #E3D2AE 0%, transparent 70%);
+  box-shadow: 0 0 12px 4px rgba(227, 210, 174, 0.4);
+  animation-duration: 5.4s;
+}
+.secao--noite .estrela--2 {
+  bottom: 18%; left: 9%; width: 3px; height: 3px;
+  background: radial-gradient(circle, #C4ADE0 0%, transparent 70%);
+  box-shadow: 0 0 10px 3px rgba(196, 173, 224, 0.4);
+  animation-duration: 6.6s; animation-delay: -2s;
+}
+
 /* ── Selo de sigilo ──────────────────────────────────────── */
 
 .selo-sigilo {
@@ -315,6 +427,7 @@ body {
   gap: 6px;
   padding: 22px 20px 20px;
   text-align: center;
+  box-shadow: 0 0 0 1px rgba(201,169,110,0.32), 0 12px 30px rgba(201,169,110,0.1);
 }
 
 .investimento .rotulo-valor {
@@ -934,7 +1047,7 @@ body.compacta {
 /* ── Movimento reduzido ──────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .brilho, .borboleta-fundo, .capa .borboleta,
+  .brilho, .borboleta-fundo, .capa .borboleta, .ramo, .faisca, .estrela,
   .painel-icone { animation: none !important; }
   .rodela { animation-duration: 2.5s; }
   .entra { opacity: 1; animation: none; }
