@@ -36,6 +36,7 @@
 @media (max-width: 320px) { html { font-size: 12.5px; } }
 
 body {
+  position: relative;
   font-family: var(--font-body);
   font-weight: 400;
   background: var(--bg);
@@ -44,6 +45,21 @@ body {
   -webkit-font-smoothing: antialiased;
   padding: clamp(1.5rem, 4.5vw, 3.75rem) clamp(1rem, 4vw, 1.5rem) 6rem;
   overflow-x: hidden;
+}
+
+/* A mesma ilustração do Hero da landing (ramos de lavanda pintados nos
+   cantos), fixa atrás de tudo — fica "emoldurando" a tela mesmo quando
+   a página rola. Um véu creme por cima garante que o texto continue
+   legível (mesma ideia do "veil" que a landing usa sobre a foto). */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -4;
+  background:
+    linear-gradient(rgba(250, 247, 242, 0.65), rgba(250, 247, 242, 0.65)),
+    url('img/hero-bg.webp') center / cover no-repeat;
+  pointer-events: none;
 }
 
 /* ── Atmosfera de fundo ──────────────────────────────────── */
@@ -251,20 +267,50 @@ body {
 
 .capa h1 {
   font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(2rem, 6.5vw, 3rem);
-  line-height: 1.1;
-  margin: 12px auto 0;
-  max-width: 15ch;
-  text-wrap: balance;
+  line-height: 0.98;
+  margin: 14px auto 0;
 }
 
-/* Como no Hero da landing: itálico em cor sólida + sombra lavanda clara */
-.capa h1 em {
+/* Mesmo tratamento do título do Hero da landing (que é, por sua vez, o
+   título do próprio livro): "Renovadas" em roxo, "para" pequeno e leve,
+   "Transformar" em verde — as duas com a mesma sombra colorida suave. */
+.titulo-eyebrow-interno {
+  display: block;
+  font-family: var(--font-body);
+  font-size: clamp(0.8rem, 2.4vw, 0.95rem);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.titulo-linha1, .titulo-linha2 { display: block; }
+.titulo-linha2 { margin-top: 0.06em; }
+
+.titulo-linha1 {
   font-style: italic;
-  font-weight: 400;
-  color: var(--purple-deep);
+  font-weight: 700;
+  font-size: clamp(2.3rem, 9vw, 3.5rem);
+  color: #4A3598;
   text-shadow: 2px 3px 0 rgba(220, 210, 240, 0.55), 0 0 15px rgba(220, 210, 240, 0.35);
+}
+
+.titulo-para {
+  display: inline-block;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.05rem, 3.6vw, 1.5rem);
+  color: #9B8FB5;
+  margin-right: 0.12em;
+}
+
+.titulo-verde {
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(2.15rem, 8vw, 3.2rem);
+  color: #506E35;
+  text-shadow: 2px 3px 0 rgba(210, 224, 200, 0.6), 0 0 15px rgba(180, 200, 160, 0.35);
 }
 
 /* Divisor da landing: hairline dourada + losango girado no centro */
@@ -289,9 +335,9 @@ body {
 
 .boas-vindas {
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 4vw, 1.7rem);
+  font-size: clamp(1.75rem, 5.8vw, 2.2rem);
   font-style: italic;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--purple-deep);
   margin-bottom: 16px;
 }
