@@ -288,7 +288,7 @@ body::before {
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 20px;
 }
 
 .titulo-eyebrow-interno::before {
