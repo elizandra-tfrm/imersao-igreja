@@ -10,6 +10,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=14">
+<style>
+  /* Ajustes só desta página, pra tabela caber sem scroll horizontal. */
+  .admin-tabela { font-size: 12.5px; }
+  .admin-tabela th, .admin-tabela td { padding: 6px 8px; white-space: nowrap; }
+  .admin-tabela select { width: 92px; font-size: 12px; padding: 2px; }
+  .admin-tabela input[type="date"] { width: 108px; font-size: 12px; padding: 2px; }
+  .admin-tabela .botao-mini { padding: 4px 8px; font-size: 11.5px; }
+</style>
 </head>
 <body class="admin">
 
@@ -71,6 +79,7 @@
       </div>
       <div class="admin-acoes-topo">
         <input type="search" id="busca" placeholder="Buscar por nome, código, e-mail...">
+        <button type="button" class="botao-mini" id="botao-excel">Exportar Excel</button>
         <button type="button" class="botao-mini botao-mini--sair" id="botao-sair">Sair</button>
       </div>
     </div>
@@ -83,9 +92,10 @@
             <th>Nome</th>
             <th>Telefone</th>
             <th>Pago</th>
-            <th>Forma de pagamento</th>
-            <th>Data do pagamento</th>
+            <th>Forma</th>
+            <th>Data pgto.</th>
             <th>Salvar</th>
+            <th>Ficha</th>
           </tr>
         </thead>
         <tbody id="corpo-tabela"></tbody>
@@ -117,6 +127,7 @@
   var corpoTabela = document.getElementById('corpo-tabela');
   var campoBusca = document.getElementById('busca');
   var botaoSair = document.getElementById('botao-sair');
+  var botaoExcel = document.getElementById('botao-excel');
   var contador = document.getElementById('contador');
   var botaoOlho = document.getElementById('botao-olho');
   var campoSenha = document.getElementById('senha');
@@ -225,6 +236,58 @@
 
   botaoSair.addEventListener('click', function () { mostrarLogin(); });
 
+  function base64ParaBlob(base64, mime) {
+    var bytes = atob(base64);
+    var numeros = new Uint8Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) numeros[i] = bytes.charCodeAt(i);
+    return new Blob([numeros], { type: mime });
+  }
+
+  function baixarArquivo(base64, nomeArquivo, mime) {
+    var url = URL.createObjectURL(base64ParaBlob(base64, mime));
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = nomeArquivo;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+  }
+
+  botaoExcel.addEventListener('click', function () {
+    var textoOriginal = botaoExcel.textContent;
+    botaoExcel.disabled = true;
+    botaoExcel.textContent = 'Gerando...';
+    apiGetAdmin('adminExportarExcel')
+      .then(function (resp) {
+        botaoExcel.disabled = false;
+        botaoExcel.textContent = textoOriginal;
+        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível exportar.'); return; }
+        baixarArquivo(resp.base64, resp.nomeArquivo, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      })
+      .catch(function () {
+        botaoExcel.disabled = false;
+        botaoExcel.textContent = textoOriginal;
+      });
+  });
+
+  function baixarFichaPdf(codigo, botao) {
+    var textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = '...';
+    apiGetAdmin('adminGerarFichaPdf', { codigo: codigo })
+      .then(function (resp) {
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
+        baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
+      })
+      .catch(function () {
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+      });
+  }
+
   function carregarInscricoes() {
     mostrarLinhaUnica('Carregando inscrições...');
     apiGetAdmin('adminListarInscricoes')
@@ -244,7 +307,7 @@
     corpoTabela.textContent = '';
     var tr = document.createElement('tr');
     var td = document.createElement('td');
-    td.colSpan = 7;
+    td.colSpan = 8;
     td.textContent = texto;
     tr.appendChild(td);
     corpoTabela.appendChild(tr);
@@ -327,6 +390,15 @@
       });
       tdSalvar.appendChild(botaoSalvar);
       tr.appendChild(tdSalvar);
+
+      var tdPdf = document.createElement('td');
+      var botaoPdf = document.createElement('button');
+      botaoPdf.type = 'button';
+      botaoPdf.className = 'botao-mini';
+      botaoPdf.textContent = 'PDF';
+      botaoPdf.addEventListener('click', function () { baixarFichaPdf(item.codigo, botaoPdf); });
+      tdPdf.appendChild(botaoPdf);
+      tr.appendChild(tdPdf);
 
       corpoTabela.appendChild(tr);
     });
