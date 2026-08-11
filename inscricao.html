@@ -267,13 +267,17 @@
         <h2>Inscrição registrada!</h2>
       </div>
       <div class="secao-notas">
-        <p class="secao-nota">Faltam só 2 passos pra confirmar sua vaga. Guarde o código abaixo (ou deixe esta página aberta) — ele identifica sua inscrição.</p>
+        <p class="secao-nota">Faltam só 2 passos pra confirmar sua vaga.</p>
       </div>
       <div class="campos">
         <div class="campo">
           <span class="rotulo-campo">Seu código de inscrição</span>
           <p style="font-family:monospace;font-size:1.2em;font-weight:bold;" id="texto-codigo"></p>
         </div>
+      </div>
+      <div class="acao">
+        <button type="button" class="botao botao--suave" id="botao-copiar-link">Copiar link desta página</button>
+        <p class="dica" id="dica-copiar-link">Se você sair daqui antes de terminar, cole esse link no WhatsApp de si mesma (ou nas Notas do celular) pra voltar depois com os botões de pagamento prontos de novo.</p>
       </div>
       <div class="acao">
         <span class="rotulo-campo">Passo 1 — Pague pelo link da PagBank</span>
@@ -385,6 +389,22 @@
     document.getElementById('bloco-confirmacao').hidden = false;
     document.getElementById('bloco-confirmacao').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  document.getElementById('botao-copiar-link').addEventListener('click', function () {
+    var botaoCopiar = this;
+    var dica = document.getElementById('dica-copiar-link');
+    var textoOriginal = dica.textContent;
+    navigator.clipboard.writeText(window.location.href).then(function () {
+      botaoCopiar.textContent = 'Link copiado!';
+      dica.textContent = 'Pronto! Agora é só colar no WhatsApp de si mesma ou nas Notas do celular.';
+      setTimeout(function () {
+        botaoCopiar.textContent = 'Copiar link desta página';
+        dica.textContent = textoOriginal;
+      }, 4000);
+    }).catch(function () {
+      dica.textContent = 'Não consegui copiar sozinho — selecione o link lá em cima, na barra de endereço, e copie manualmente.';
+    });
+  });
 
   // Se a pessoa voltar com o link salvo/favoritado (?ref=CODIGO), mostra a mesma
   // tela de confirmação direto, sem precisar preencher a ficha de novo.
