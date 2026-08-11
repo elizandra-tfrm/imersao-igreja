@@ -267,7 +267,7 @@
         <h2>Inscrição registrada!</h2>
       </div>
       <div class="secao-notas">
-        <p class="secao-nota">Guarde o código abaixo — é ele que vamos usar para confirmar seu pagamento.</p>
+        <p class="secao-nota">Faltam só 2 passos pra confirmar sua vaga. Guarde o código abaixo (ou deixe esta página aberta) — ele identifica sua inscrição.</p>
       </div>
       <div class="campos">
         <div class="campo">
@@ -276,11 +276,14 @@
         </div>
       </div>
       <div class="acao">
+        <span class="rotulo-campo">Passo 1 — Pague pelo link da PagBank</span>
         <a class="botao" id="link-pagamento" href="#" target="_blank" rel="noopener">Ir para pagamento (Pix ou cartão)</a>
+        <p class="dica">Abre em outra aba. Quando terminar de pagar, <strong>volte para esta página</strong> (não feche esta aba).</p>
       </div>
       <div class="acao" style="margin-top:14px;">
+        <span class="rotulo-campo">Passo 2 — Depois de pagar, mande o comprovante</span>
         <a class="botao" id="link-whatsapp" href="#" target="_blank" rel="noopener">Mandar comprovante no WhatsApp</a>
-        <p class="dica">Depois de pagar, clique aqui e mande o comprovante pra Lilian — é assim que confirmamos sua inscrição.</p>
+        <p class="dica">Vai abrir o WhatsApp da Lilian com uma mensagem pronta — só falta você <strong>anexar o print/comprovante do pagamento</strong> antes de enviar. É assim que confirmamos sua inscrição.</p>
       </div>
     </section>
 
@@ -371,7 +374,7 @@
     document.getElementById('texto-codigo').textContent = codigo;
     document.getElementById('link-pagamento').href = paymentUrl;
 
-    var mensagem = 'Olá! Fiz minha inscrição na Imersão (código ' + codigo + ') e vou pagar agora.';
+    var mensagem = 'Olá! Fiz minha inscrição na Imersão (código ' + codigo + ') e acabei de pagar. Segue o comprovante:';
     document.getElementById('link-whatsapp').href =
       'https://wa.me/5567996083444?text=' + encodeURIComponent(mensagem);
 
