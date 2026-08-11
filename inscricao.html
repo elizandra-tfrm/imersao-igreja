@@ -299,6 +299,10 @@
 <script>
   // Backend paliativo — projeto Apps Script separado do formulário principal.
   var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxmftpeE1R9vP6Mj53OH6ltQ9JKPYfnoPYJWt1H3gm8S7GJ0kV9NJBLrQJyGKuIETF0/exec';
+  // Mesmo link fixo de pagamento configurado no backend — repetido aqui (é público
+  // mesmo, feito pra ser compartilhado) pra reconstruir a tela de confirmação sem
+  // precisar registrar de novo quando a pessoa volta com ?ref= na URL.
+  var LINK_PAGAMENTO_PIX = 'https://pag.ae/823uetM2R';
 </script>
 <script src="api.js"></script>
 <script src="mascaras.js?v=2"></script>
@@ -370,9 +374,9 @@
   function valor(id) { return document.getElementById(id).value; }
 
   function mostrarConfirmacao(codigo, paymentUrl) {
-    document.getElementById('bloco-acao-form').closest('form').hidden = true;
+    form.hidden = true;
     document.getElementById('texto-codigo').textContent = codigo;
-    document.getElementById('link-pagamento').href = paymentUrl;
+    document.getElementById('link-pagamento').href = paymentUrl || LINK_PAGAMENTO_PIX;
 
     var mensagem = 'Olá! Fiz minha inscrição na Imersão (código ' + codigo + ') e acabei de pagar. Segue o comprovante:';
     document.getElementById('link-whatsapp').href =
@@ -381,6 +385,11 @@
     document.getElementById('bloco-confirmacao').hidden = false;
     document.getElementById('bloco-confirmacao').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  // Se a pessoa voltar com o link salvo/favoritado (?ref=CODIGO), mostra a mesma
+  // tela de confirmação direto, sem precisar preencher a ficha de novo.
+  var codigoNaUrl = new URLSearchParams(window.location.search).get('ref');
+  if (codigoNaUrl) mostrarConfirmacao(codigoNaUrl);
 
   form.addEventListener('submit', function (evento) {
     evento.preventDefault();
@@ -410,6 +419,9 @@
     apiPost('registrarInscricao', { dados: dados })
       .then(function (resposta) {
         if (resposta.ok) {
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '?ref=' + encodeURIComponent(resposta.codigo));
+          }
           mostrarConfirmacao(resposta.codigo, resposta.paymentUrl);
           return;
         }
