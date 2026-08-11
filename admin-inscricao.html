@@ -87,10 +87,7 @@
           <tr>
             <th>Código</th>
             <th>Nome</th>
-            <th>E-mail</th>
-            <th>CPF</th>
             <th>Telefone</th>
-            <th>Inscrito em</th>
             <th>Pago</th>
             <th>Forma de pagamento</th>
             <th>Data do pagamento</th>
@@ -260,7 +257,7 @@
     corpoTabela.textContent = '';
     var tr = document.createElement('tr');
     var td = document.createElement('td');
-    td.colSpan = 10;
+    td.colSpan = 7;
     td.textContent = texto;
     tr.appendChild(td);
     corpoTabela.appendChild(tr);
@@ -294,7 +291,7 @@
     lista.forEach(function (item) {
       var tr = document.createElement('tr');
 
-      ['codigo', 'nome', 'email', 'cpf', 'telefone', 'dataInscricao'].forEach(function (chave) {
+      ['codigo', 'nome', 'telefone'].forEach(function (chave) {
         var td = document.createElement('td');
         td.textContent = item[chave] || '—';
         tr.appendChild(td);
