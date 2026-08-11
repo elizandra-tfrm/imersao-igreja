@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel administrativo (temporário) — Imersão Mulheres Renovadas para Transformar</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=14">
+</head>
+<body class="admin">
+
+  <!-- ── Carregando ────────────────────────────────────────── -->
+  <div class="vidro admin-login" id="tela-carregando">
+    <h1>Painel administrativo</h1>
+    <p class="sub">Sistema paliativo — carregando...</p>
+  </div>
+
+  <!-- ── Criar login (só aparece na primeiríssima vez) ───────── -->
+  <div class="vidro admin-login" id="tela-criar-login" hidden>
+    <h1>Painel administrativo</h1>
+    <p class="sub">Sistema paliativo — Imersão Mulheres Renovadas para Transformar</p>
+    <p class="dica" style="margin-bottom:16px;">Ainda não existe login pra esse painel. Crie um usuário e senha agora (isso só pode ser feito uma vez).</p>
+    <form id="form-criar-login">
+      <div>
+        <label for="novo-usuario">Usuário</label>
+        <input type="text" id="novo-usuario" name="usuario" autocomplete="username" required>
+      </div>
+      <div>
+        <label for="nova-senha">Senha (mínimo 6 caracteres)</label>
+        <input type="password" id="nova-senha" name="senha" autocomplete="new-password" required minlength="6">
+      </div>
+      <button type="submit" class="botao" id="botao-criar-login">Criar login</button>
+      <div class="admin-erro" id="erro-criar-login" role="alert"></div>
+    </form>
+  </div>
+
+  <!-- ── Login ─────────────────────────────────────────────── -->
+  <div class="vidro admin-login" id="tela-login" hidden>
+    <h1>Painel administrativo</h1>
+    <p class="sub">Sistema paliativo — Imersão Mulheres Renovadas para Transformar</p>
+    <form id="form-login">
+      <div>
+        <label for="usuario">Usuário</label>
+        <input type="text" id="usuario" name="usuario" autocomplete="username" required>
+      </div>
+      <div>
+        <label for="senha">Senha</label>
+        <div class="campo-senha">
+          <input type="password" id="senha" name="senha" autocomplete="current-password" required>
+          <button type="button" class="botao-olho" id="botao-olho" aria-label="Mostrar senha" aria-pressed="false">
+            <svg id="icone-olho-aberto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg id="icone-olho-fechado" hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.36 18.36 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a18.42 18.42 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="botao" id="botao-entrar">Entrar</button>
+      <div class="admin-erro" id="erro-login" role="alert"></div>
+    </form>
+  </div>
+
+  <!-- ── Painel ────────────────────────────────────────────── -->
+  <div id="tela-painel" hidden>
+    <div class="admin-cabecalho">
+      <div>
+        <h1>Inscrições (paliativo)</h1>
+        <div class="contador" id="contador">Carregando...</div>
+      </div>
+      <div class="admin-acoes-topo">
+        <input type="search" id="busca" placeholder="Buscar por nome, código, e-mail...">
+        <button type="button" class="botao-mini botao-mini--sair" id="botao-sair">Sair</button>
+      </div>
+    </div>
+
+    <div class="admin-tabela-wrap">
+      <table class="admin-tabela">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>CPF</th>
+            <th>Telefone</th>
+            <th>Inscrito em</th>
+            <th>Pago</th>
+            <th>Forma de pagamento</th>
+            <th>Data do pagamento</th>
+            <th>Salvar</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-tabela"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxmftpeE1R9vP6Mj53OH6ltQ9JKPYfnoPYJWt1H3gm8S7GJ0kV9NJBLrQJyGKuIETF0/exec';
+</script>
+<script src="api.js"></script>
+<script>
+(function () {
+  var token = null;
+  var todasInscricoes = [];
+
+  var telaCarregando = document.getElementById('tela-carregando');
+  var telaCriarLogin = document.getElementById('tela-criar-login');
+  var telaLogin = document.getElementById('tela-login');
+  var telaPainel = document.getElementById('tela-painel');
+
+  var formCriarLogin = document.getElementById('form-criar-login');
+  var erroCriarLogin = document.getElementById('erro-criar-login');
+  var botaoCriarLogin = document.getElementById('botao-criar-login');
+
+  var formLogin = document.getElementById('form-login');
+  var botaoEntrar = document.getElementById('botao-entrar');
+  var erroLogin = document.getElementById('erro-login');
+
+  var corpoTabela = document.getElementById('corpo-tabela');
+  var campoBusca = document.getElementById('busca');
+  var botaoSair = document.getElementById('botao-sair');
+  var contador = document.getElementById('contador');
+  var botaoOlho = document.getElementById('botao-olho');
+  var campoSenha = document.getElementById('senha');
+  var iconeOlhoAberto = document.getElementById('icone-olho-aberto');
+  var iconeOlhoFechado = document.getElementById('icone-olho-fechado');
+
+  var COLUNAS_BUSCA = ['codigo', 'nome', 'apelido', 'email', 'cpf', 'telefone'];
+
+  function esconderTudo() {
+    telaCarregando.hidden = true;
+    telaCriarLogin.hidden = true;
+    telaLogin.hidden = true;
+    telaPainel.hidden = true;
+  }
+
+  function mostrarLogin(mensagem) {
+    token = null;
+    esconderTudo();
+    telaLogin.hidden = false;
+    erroLogin.textContent = mensagem || '';
+  }
+
+  function mostrarPainel() {
+    esconderTudo();
+    telaPainel.hidden = false;
+    carregarInscricoes();
+  }
+
+  function apiGetAdmin(action, extra) {
+    var params = Object.assign({ token: token }, extra || {});
+    return apiGet(action, params).then(function (resp) {
+      if (resp && resp.sessaoInvalida) {
+        mostrarLogin('Sessão expirada. Faça login novamente.');
+        return Promise.reject(new Error('sessao_invalida'));
+      }
+      return resp;
+    });
+  }
+
+  botaoOlho.addEventListener('click', function () {
+    var vaiMostrar = campoSenha.type === 'password';
+    campoSenha.type = vaiMostrar ? 'text' : 'password';
+    iconeOlhoAberto.hidden = vaiMostrar;
+    iconeOlhoFechado.hidden = !vaiMostrar;
+  });
+
+  // ── Primeira verificação: existe login configurado? ──────────
+  apiGet('adminStatusLogin').then(function (resp) {
+    esconderTudo();
+    if (resp && resp.ok && !resp.configurado) {
+      telaCriarLogin.hidden = false;
+    } else {
+      telaLogin.hidden = false;
+    }
+  }).catch(function () {
+    esconderTudo();
+    telaLogin.hidden = false;
+    erroLogin.textContent = 'Não conseguimos falar com o servidor. Recarregue a página.';
+  });
+
+  formCriarLogin.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+    erroCriarLogin.textContent = '';
+    botaoCriarLogin.disabled = true;
+    botaoCriarLogin.textContent = 'Criando...';
+
+    apiPost('adminConfigurarLoginInicial', {
+      usuario: document.getElementById('novo-usuario').value,
+      senha: document.getElementById('nova-senha').value
+    }).then(function (resp) {
+      botaoCriarLogin.disabled = false;
+      botaoCriarLogin.textContent = 'Criar login';
+      if (!resp.ok) {
+        erroCriarLogin.textContent = resp.mensagem || 'Não foi possível criar o login.';
+        return;
+      }
+      esconderTudo();
+      telaLogin.hidden = false;
+      erroLogin.textContent = '';
+    }).catch(function () {
+      botaoCriarLogin.disabled = false;
+      botaoCriarLogin.textContent = 'Criar login';
+      erroCriarLogin.textContent = 'Não conseguimos falar com o servidor. Tente novamente.';
+    });
+  });
+
+  formLogin.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+    erroLogin.textContent = '';
+    botaoEntrar.disabled = true;
+    botaoEntrar.textContent = 'Entrando...';
+
+    apiPost('adminLogin', {
+      usuario: document.getElementById('usuario').value,
+      senha: document.getElementById('senha').value
+    }).then(function (resp) {
+      botaoEntrar.disabled = false;
+      botaoEntrar.textContent = 'Entrar';
+      if (!resp.ok) {
+        erroLogin.textContent = resp.mensagem || 'Não foi possível entrar.';
+        return;
+      }
+      token = resp.token;
+      document.getElementById('senha').value = '';
+      mostrarPainel();
+    }).catch(function () {
+      botaoEntrar.disabled = false;
+      botaoEntrar.textContent = 'Entrar';
+      erroLogin.textContent = 'Não conseguimos falar com o servidor. Tente novamente.';
+    });
+  });
+
+  botaoSair.addEventListener('click', function () { mostrarLogin(); });
+
+  function carregarInscricoes() {
+    mostrarLinhaUnica('Carregando inscrições...');
+    apiGetAdmin('adminListarInscricoes')
+      .then(function (resp) {
+        if (!resp.ok) {
+          mostrarLinhaUnica(resp.mensagem || 'Não foi possível carregar as inscrições.');
+          return;
+        }
+        todasInscricoes = resp.inscricoes || [];
+        contador.textContent = todasInscricoes.length + ' inscrição(ões)';
+        renderizarTabela(todasInscricoes);
+      })
+      .catch(function () { /* sessão expirada já tratada em apiGetAdmin */ });
+  }
+
+  function mostrarLinhaUnica(texto) {
+    corpoTabela.textContent = '';
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = 10;
+    td.textContent = texto;
+    tr.appendChild(td);
+    corpoTabela.appendChild(tr);
+  }
+
+  function criarSelect(opcoes, valorAtual) {
+    var select = document.createElement('select');
+    opcoes.forEach(function (opcao) {
+      var option = document.createElement('option');
+      option.value = opcao.valor;
+      option.textContent = opcao.rotulo;
+      if (opcao.valor === (valorAtual || '')) option.selected = true;
+      select.appendChild(option);
+    });
+    return select;
+  }
+
+  /**
+   * Monta a tabela via DOM (createElement/textContent), nunca innerHTML: os
+   * dados vêm do formulário público, sem login pra escrever — podem conter
+   * texto malicioso. textContent nunca interpreta isso como HTML/script.
+   */
+  function renderizarTabela(lista) {
+    corpoTabela.textContent = '';
+
+    if (!lista.length) {
+      mostrarLinhaUnica('Nenhuma inscrição encontrada.');
+      return;
+    }
+
+    lista.forEach(function (item) {
+      var tr = document.createElement('tr');
+
+      ['codigo', 'nome', 'email', 'cpf', 'telefone', 'dataInscricao'].forEach(function (chave) {
+        var td = document.createElement('td');
+        td.textContent = item[chave] || '—';
+        tr.appendChild(td);
+      });
+
+      var tdPago = document.createElement('td');
+      var selectPago = criarSelect([
+        { valor: 'Pendente', rotulo: 'Pendente' },
+        { valor: 'Pago', rotulo: 'Pago' },
+        { valor: 'Não pagou', rotulo: 'Não pagou' }
+      ], item.pago);
+      tdPago.appendChild(selectPago);
+      tr.appendChild(tdPago);
+
+      var tdForma = document.createElement('td');
+      var selectForma = criarSelect([
+        { valor: '', rotulo: '—' },
+        { valor: 'Pix', rotulo: 'Pix' },
+        { valor: 'Cartão de crédito', rotulo: 'Cartão de crédito' },
+        { valor: 'Outro', rotulo: 'Outro' }
+      ], item.formaPagamento);
+      tdForma.appendChild(selectForma);
+      tr.appendChild(tdForma);
+
+      var tdData = document.createElement('td');
+      var inputData = document.createElement('input');
+      inputData.type = 'date';
+      inputData.value = item.dataPagamento || '';
+      tdData.appendChild(inputData);
+      tr.appendChild(tdData);
+
+      // Marca a data de hoje automaticamente quando muda pra "Pago" e a data ainda está vazia.
+      selectPago.addEventListener('change', function () {
+        if (selectPago.value === 'Pago' && !inputData.value) {
+          inputData.value = new Date().toISOString().slice(0, 10);
+        }
+      });
+
+      var tdSalvar = document.createElement('td');
+      var botaoSalvar = document.createElement('button');
+      botaoSalvar.type = 'button';
+      botaoSalvar.className = 'botao-mini';
+      botaoSalvar.textContent = 'Salvar';
+      botaoSalvar.addEventListener('click', function () {
+        salvarLinha(item.codigo, selectPago.value, selectForma.value, inputData.value, botaoSalvar);
+      });
+      tdSalvar.appendChild(botaoSalvar);
+      tr.appendChild(tdSalvar);
+
+      corpoTabela.appendChild(tr);
+    });
+  }
+
+  function salvarLinha(codigo, pago, formaPagamento, dataPagamento, botao) {
+    var textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Salvando...';
+
+    apiPost('adminAtualizarInscricao', {
+      token: token,
+      codigo: codigo,
+      campos: { Pago: pago, Forma_Pagamento: formaPagamento, Data_Pagamento: dataPagamento }
+    }).then(function (resp) {
+      botao.disabled = false;
+      if (!resp.ok) {
+        botao.textContent = textoOriginal;
+        alert(resp.mensagem || 'Não foi possível salvar.');
+        if (resp.sessaoInvalida) mostrarLogin('Sessão expirada. Faça login novamente.');
+        return;
+      }
+      botao.textContent = 'Salvo!';
+      setTimeout(function () { botao.textContent = textoOriginal; }, 2000);
+    }).catch(function () {
+      botao.disabled = false;
+      botao.textContent = textoOriginal;
+      alert('Não conseguimos falar com o servidor. Tente novamente.');
+    });
+  }
+
+  campoBusca.addEventListener('input', function () {
+    var termo = campoBusca.value.trim().toLowerCase();
+    if (!termo) { renderizarTabela(todasInscricoes); return; }
+    var filtradas = todasInscricoes.filter(function (item) {
+      return COLUNAS_BUSCA.some(function (chave) {
+        var valor = item[chave];
+        return valor && String(valor).toLowerCase().indexOf(termo) !== -1;
+      });
+    });
+    renderizarTabela(filtradas);
+  });
+})();
+</script>
+</body>
+</html>
