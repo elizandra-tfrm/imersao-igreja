@@ -23,6 +23,11 @@
   .admin-tabela thead th, .admin-tabela tbody td { padding: 5px 10px; white-space: nowrap; }
   .admin-tabela select { font-size: 12px; }
   .admin-tabela input[type="date"] { font-size: 11.5px; }
+
+  /* .admin-tabela-wrap é uma div de bloco (largura 100% do pai por padrão) —
+     por isso a "moldura" branca continuava esticada mesmo com a tabela menor
+     lá dentro. inline-block faz ela abraçar só o tamanho da tabela. */
+  .admin-tabela-wrap { display: inline-block; width: auto; max-width: 100%; }
 </style>
 </head>
 <body class="admin">
