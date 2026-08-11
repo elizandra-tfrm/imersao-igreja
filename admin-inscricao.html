@@ -13,16 +13,10 @@
 </head>
 <body class="admin">
 
-  <!-- ── Carregando ────────────────────────────────────────── -->
-  <div class="vidro admin-login" id="tela-carregando">
-    <h1>Painel administrativo</h1>
-    <p class="sub">Sistema paliativo — carregando...</p>
-  </div>
-
   <!-- ── Criar login (só aparece na primeiríssima vez) ───────── -->
   <div class="vidro admin-login" id="tela-criar-login" hidden>
     <h1>Painel administrativo</h1>
-    <p class="sub">Sistema paliativo — Imersão Mulheres Renovadas para Transformar</p>
+    <p class="sub">Imersão Mulheres Renovadas para Transformar</p>
     <p class="dica" style="margin-bottom:16px;">Ainda não existe login pra esse painel. Crie um usuário e senha agora (isso só pode ser feito uma vez).</p>
     <form id="form-criar-login">
       <div>
@@ -39,9 +33,9 @@
   </div>
 
   <!-- ── Login ─────────────────────────────────────────────── -->
-  <div class="vidro admin-login" id="tela-login" hidden>
+  <div class="vidro admin-login" id="tela-login">
     <h1>Painel administrativo</h1>
-    <p class="sub">Sistema paliativo — Imersão Mulheres Renovadas para Transformar</p>
+    <p class="sub">Imersão Mulheres Renovadas para Transformar</p>
     <form id="form-login">
       <div>
         <label for="usuario">Usuário</label>
@@ -108,7 +102,6 @@
   var token = null;
   var todasInscricoes = [];
 
-  var telaCarregando = document.getElementById('tela-carregando');
   var telaCriarLogin = document.getElementById('tela-criar-login');
   var telaLogin = document.getElementById('tela-login');
   var telaPainel = document.getElementById('tela-painel');
@@ -133,7 +126,6 @@
   var COLUNAS_BUSCA = ['codigo', 'nome', 'apelido', 'email', 'cpf', 'telefone'];
 
   function esconderTudo() {
-    telaCarregando.hidden = true;
     telaCriarLogin.hidden = true;
     telaLogin.hidden = true;
     telaPainel.hidden = true;
@@ -170,19 +162,14 @@
     iconeOlhoFechado.hidden = !vaiMostrar;
   });
 
-  // ── Primeira verificação: existe login configurado? ──────────
+  // A tela de login já aparece por padrão (ver HTML) — só troca pra "criar
+  // login" no raro caso de ainda não haver credenciais configuradas.
   apiGet('adminStatusLogin').then(function (resp) {
-    esconderTudo();
     if (resp && resp.ok && !resp.configurado) {
+      telaLogin.hidden = true;
       telaCriarLogin.hidden = false;
-    } else {
-      telaLogin.hidden = false;
     }
-  }).catch(function () {
-    esconderTudo();
-    telaLogin.hidden = false;
-    erroLogin.textContent = 'Não conseguimos falar com o servidor. Recarregue a página.';
-  });
+  }).catch(function () { /* mantém a tela de login; erro real aparece ao tentar entrar */ });
 
   formCriarLogin.addEventListener('submit', function (evento) {
     evento.preventDefault();
