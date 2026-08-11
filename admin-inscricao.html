@@ -11,12 +11,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=14">
 <style>
-  /* Ajustes só desta página, pra tabela caber sem scroll horizontal. */
-  .admin-tabela { font-size: 12.5px; }
-  .admin-tabela th, .admin-tabela td { padding: 6px 8px; white-space: nowrap; }
-  .admin-tabela select { width: 92px; font-size: 12px; padding: 2px; }
-  .admin-tabela input[type="date"] { width: 108px; font-size: 12px; padding: 2px; }
-  .admin-tabela .botao-mini { padding: 4px 8px; font-size: 11.5px; }
+  /* Ajustes só desta página, pra tabela caber sem scroll horizontal: larguras
+     fixas por coluna (table-layout: fixed) em vez de deixar o navegador
+     esticar a coluna pro conteúdo mais longo — texto que não couber corta
+     com reticências (title mostra o valor completo ao passar o mouse). */
+  .admin-tabela-wrap { overflow-x: visible; }
+  .admin-tabela { font-size: 11.5px; table-layout: fixed; width: 100%; }
+  .admin-tabela th, .admin-tabela td { padding: 4px 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .admin-tabela col.col-codigo { width: 15%; }
+  .admin-tabela col.col-nome { width: 16%; }
+  .admin-tabela col.col-pago { width: 13%; }
+  .admin-tabela col.col-forma { width: 15%; }
+  .admin-tabela col.col-data { width: 15%; }
+  .admin-tabela col.col-acao { width: 13%; }
+  .admin-tabela select { width: 100%; font-size: 11px; padding: 1px; }
+  .admin-tabela input[type="date"] { width: 100%; font-size: 10.5px; padding: 1px; }
+  .admin-tabela .botao-mini { padding: 3px 6px; font-size: 11px; width: 100%; }
 </style>
 </head>
 <body class="admin">
@@ -86,11 +96,14 @@
 
     <div class="admin-tabela-wrap">
       <table class="admin-tabela">
+        <colgroup>
+          <col class="col-codigo"><col class="col-nome"><col class="col-pago">
+          <col class="col-forma"><col class="col-data"><col class="col-acao"><col class="col-acao">
+        </colgroup>
         <thead>
           <tr>
             <th>Código</th>
             <th>Nome</th>
-            <th>Telefone</th>
             <th>Pago</th>
             <th>Forma</th>
             <th>Data pgto.</th>
@@ -307,7 +320,7 @@
     corpoTabela.textContent = '';
     var tr = document.createElement('tr');
     var td = document.createElement('td');
-    td.colSpan = 8;
+    td.colSpan = 7;
     td.textContent = texto;
     tr.appendChild(td);
     corpoTabela.appendChild(tr);
@@ -341,9 +354,10 @@
     lista.forEach(function (item) {
       var tr = document.createElement('tr');
 
-      ['codigo', 'nome', 'telefone'].forEach(function (chave) {
+      ['codigo', 'nome'].forEach(function (chave) {
         var td = document.createElement('td');
         td.textContent = item[chave] || '—';
+        td.title = item[chave] || '';
         tr.appendChild(td);
       });
 
