@@ -1013,6 +1013,18 @@ textarea { min-height: 92px; resize: vertical; line-height: 1.65; }
 
 .painel-texto p { color: var(--text-muted); font-weight: 300; font-size: 0.96rem; }
 
+/* Aviso de que o CPF já tinha inscrição. Mais escuro e mais pesado que o texto
+   em volta para não passar batido, e com um respiro embaixo separando-o do
+   texto de boas-vindas logo abaixo. Os dois seletores existem porque a mesma
+   mensagem aparece na tela de confirmação (.painel-texto) e no formulário do
+   sistema paliativo (.secao-notas). */
+.painel-texto .aviso-reenvio,
+.secao-notas .aviso-reenvio {
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
 .painel-texto .destaque {
   font-family: var(--font-display);
   font-style: italic;
