@@ -59,7 +59,7 @@
     <div class="investimento vidro entra entra--4">
       <span class="rotulo-valor">Investimento</span>
       <span class="valor" id="valor-inscricao">R$ 100,00</span>
-      <span class="valor-nota">Pix ou cartão de crédito, pelo PagBank</span>
+      <span class="valor-nota">Pix ou cartão de crédito</span>
     </div>
 
     <form id="form-inscricao" novalidate>
@@ -261,11 +261,12 @@
             <h2>Pagamento</h2>
           </div>
           <div class="secao-notas">
-            <p class="secao-nota">Ao concluir a ficha, você segue para o ambiente de pagamento do PagBank, onde pode pagar por Pix ou cartão de crédito. Após realizar o pagamento, siga as orientações apresentadas para confirmação da sua inscrição.</p>
+            <p class="secao-nota">Ao concluir a ficha, você recebe seu código de inscrição e escolhe pagar na hora, por Pix ou cartão de crédito.</p>
+            <p class="secao-nota">Se preferir pagar depois, sua vaga já fica registrada — é só voltar pelo link da sua inscrição quando quiser.</p>
           </div>
 
           <div class="acao">
-            <button type="submit" class="botao" id="botao-enviar">Concluir inscrição e pagar</button>
+            <button type="submit" class="botao" id="botao-enviar">Concluir Inscrição e Pagar</button>
             <div class="recado" id="recado" role="status" aria-live="polite"></div>
           </div>
         </section>
@@ -358,7 +359,7 @@
 
   function liberarBotao() {
     botao.disabled = false;
-    botao.textContent = 'Concluir inscrição e pagar';
+    botao.textContent = 'Concluir Inscrição e Pagar';
   }
 
   function valorRadio(nome) {
