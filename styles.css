@@ -675,6 +675,37 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] {
 
 textarea { min-height: 92px; resize: vertical; line-height: 1.65; }
 
+/* Escopado em .campo de propósito: um seletor solto "select" pegaria também os
+   selects das tabelas dos painéis administrativos, que têm tamanho próprio. */
+.campo select {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(196, 173, 224, 0.35);
+  border-radius: 0.7rem;
+  padding: 0.8rem 0.95rem;
+  transition:
+    border-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    background 0.25s var(--ease);
+}
+
+.campo select:hover:not(:focus) { border-color: rgba(201,169,110,0.55); }
+
+.campo select:focus {
+  outline: none;
+  background: #FFFFFF;
+  border-color: var(--lavender);
+  box-shadow: 0 0 0 4px rgba(123,94,167,0.12), 0 8px 20px rgba(123,94,167,0.08);
+}
+
+.campo select[aria-invalid="true"] {
+  border-color: var(--erro);
+  box-shadow: 0 0 0 4px rgba(180,35,24,0.08);
+}
+
 .dica {
   font-size: 0.79rem;
   font-weight: 300;

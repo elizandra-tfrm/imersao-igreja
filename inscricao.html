@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=15">
+<link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 
@@ -99,7 +99,15 @@
               </div>
               <div class="campo">
                 <label for="estadoCivil">Estado civil</label>
-                <input type="text" id="estadoCivil" name="estadoCivil" placeholder="Ex: Casada" required>
+                <select id="estadoCivil" name="estadoCivil" required>
+                  <option value="">Selecione...</option>
+                  <option value="Solteira">Solteira</option>
+                  <option value="Casada">Casada</option>
+                  <option value="União estável">União estável</option>
+                  <option value="Separada">Separada</option>
+                  <option value="Divorciada">Divorciada</option>
+                  <option value="Viúva">Viúva</option>
+                </select>
                 <div class="erro-campo" id="erro-estadoCivil"></div>
               </div>
             </div>
@@ -162,21 +170,18 @@
           <div class="campos">
             <div class="campo">
               <label for="vidaComDeus">Em uma frase, como você descreveria hoje a sua vida com Deus?</label>
-              <textarea id="vidaComDeus" name="vidaComDeus" rows="2" required></textarea>
-              <div class="erro-campo" id="erro-vidaComDeus"></div>
+              <textarea id="vidaComDeus" name="vidaComDeus" rows="2"></textarea>
             </div>
 
             <div class="campo">
               <label for="areaCura">Existe alguma área da sua vida em que você sente necessidade de cura, transformação, fortalecimento ou direcionamento?</label>
-              <textarea id="areaCura" name="areaCura" rows="3" required></textarea>
-              <div class="erro-campo" id="erro-areaCura"></div>
+              <textarea id="areaCura" name="areaCura" rows="3"></textarea>
               <p class="dica">Você pode responder brevemente e não precisa compartilhar detalhes que não queira.</p>
             </div>
 
             <div class="campo">
               <label for="motivacao">O que motivou você a participar desta imersão?</label>
-              <textarea id="motivacao" name="motivacao" rows="3" required></textarea>
-              <div class="erro-campo" id="erro-motivacao"></div>
+              <textarea id="motivacao" name="motivacao" rows="3"></textarea>
             </div>
           </div>
         </section>
@@ -195,14 +200,12 @@
           <div class="campos">
             <div class="campo">
               <label for="expectativa">O que você espera receber ou levar desta imersão para a sua vida?</label>
-              <textarea id="expectativa" name="expectativa" rows="3" required></textarea>
-              <div class="erro-campo" id="erro-expectativa"></div>
+              <textarea id="expectativa" name="expectativa" rows="3"></textarea>
             </div>
 
             <div class="campo">
               <label for="necessidadeApoio">Existe alguma informação que a coordenação precisa saber para acolher você melhor durante a imersão?</label>
-              <textarea id="necessidadeApoio" name="necessidadeApoio" rows="3" required></textarea>
-              <div class="erro-campo" id="erro-necessidadeApoio"></div>
+              <textarea id="necessidadeApoio" name="necessidadeApoio" rows="3"></textarea>
               <p class="dica">Exemplos: limitação física, necessidade especial, restrição alimentar, questão emocional que considere importante informar ou alguma necessidade específica de apoio. Se não houver nada, escreva "não há".</p>
             </div>
           </div>
@@ -330,8 +333,7 @@
      único campo opcional do formulário. */
   var camposComErro = [
     'nome', 'telefone', 'idade', 'estadoCivil', 'temFilhos', 'quantosFilhos',
-    'participaIgreja', 'qualIgreja', 'email', 'cpf',
-    'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
+    'participaIgreja', 'qualIgreja', 'email', 'cpf'
   ];
 
   aplicarMascara(document.getElementById('cpf'), mascaraCPF);
