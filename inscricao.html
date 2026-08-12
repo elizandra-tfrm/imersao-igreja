@@ -280,7 +280,7 @@
       </div>
       <div class="secao-notas">
         <p class="secao-nota" id="nota-confirmacao">Faltam só 2 passos pra confirmar sua vaga.</p>
-        <p class="secao-nota" id="nota-ja-inscrita" hidden>Você já estava inscrita com este CPF — não criamos outra inscrição, só atualizamos suas respostas com o que você acabou de enviar.</p>
+        <p class="secao-nota" id="nota-ja-inscrita" hidden>Se você tentou se inscrever antes e a página deu erro, aquela inscrição funcionou. Você tem só uma inscrição, agora com as respostas que acabou de enviar.</p>
       </div>
       <div class="campos">
         <div class="campo">
@@ -420,7 +420,7 @@
       'https://wa.me/5567996083444?text=' + encodeURIComponent(mensagem);
 
     if (resposta.jaInscrita) {
-      document.getElementById('titulo-confirmacao').textContent = 'Você já estava inscrita';
+      document.getElementById('titulo-confirmacao').textContent = 'Sua inscrição já estava registrada';
       document.getElementById('nota-confirmacao').hidden = true;
       document.getElementById('nota-ja-inscrita').hidden = false;
     }

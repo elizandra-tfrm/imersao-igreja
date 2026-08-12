@@ -54,7 +54,7 @@
       </div>
       <h1 id="titulo-pago">Inscrição realizada <em>com sucesso!</em></h1>
       <div class="painel-texto">
-        <p id="aviso-ja-inscrita-pago" hidden>Você já tinha uma inscrição com este CPF — não criamos outra, só atualizamos suas respostas.</p>
+        <p id="aviso-ja-inscrita-pago" hidden>Se você tentou se inscrever antes e a página deu erro, aquela inscrição funcionou. Você tem só uma inscrição, agora com as respostas que acabou de enviar.</p>
         <p id="mensagem-pago">Ficamos felizes em receber você na Imersão Mulheres Renovadas para Transformar.</p>
         <p class="ocultavel">Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação.</p>
         <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
@@ -83,7 +83,7 @@
       </div>
       <h1 id="titulo-registrada">Inscrição registrada!</h1>
       <div class="painel-texto">
-        <p id="aviso-ja-inscrita" hidden>Você já tinha uma inscrição com este CPF — não criamos outra, só atualizamos suas respostas.</p>
+        <p id="aviso-ja-inscrita" hidden>Se você tentou se inscrever antes e a página deu erro, aquela inscrição funcionou. Você tem só uma inscrição, agora com as respostas que acabou de enviar.</p>
         <p id="mensagem-registrada">Sua vaga está registrada.</p>
         <p class="ocultavel">Guarde o link desta página: é por ele que você volta aqui quando quiser.</p>
       </div>
@@ -205,7 +205,7 @@
           'Ficamos felizes em receber você, ' + resposta.nome.split(' ')[0] + '!';
       }
       if (jaEstavaInscrita) {
-        document.getElementById('titulo-pago').textContent = 'Você já estava inscrita';
+        document.getElementById('titulo-pago').textContent = 'Sua inscrição já estava registrada';
         document.getElementById('aviso-ja-inscrita-pago').hidden = false;
       }
       document.getElementById('resumo-codigo').textContent = codigo;
@@ -234,7 +234,7 @@
           'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua vaga está registrada.';
       }
       if (jaEstavaInscrita) {
-        document.getElementById('titulo-registrada').textContent = 'Você já estava inscrita';
+        document.getElementById('titulo-registrada').textContent = 'Sua inscrição já estava registrada';
         document.getElementById('aviso-ja-inscrita').hidden = false;
       }
       document.getElementById('resumo-codigo-pendente').textContent = codigo;
