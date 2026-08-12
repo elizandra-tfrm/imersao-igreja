@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body class="admin">
 
@@ -63,14 +63,10 @@
           <tr>
             <th>Código</th>
             <th>Nome</th>
-            <th>Idade</th>
-            <th>Estado civil</th>
-            <th>E-mail</th>
-            <th>CPF</th>
-            <th>Status</th>
-            <th>Pagamento</th>
-            <th>Inscrito em</th>
-            <th>Pago em</th>
+            <th>Situação</th>
+            <th>Forma</th>
+            <th>Data pgto.</th>
+            <th>Salvar</th>
             <th>Ficha</th>
           </tr>
         </thead>
@@ -101,21 +97,32 @@
   var iconeOlhoAberto = document.getElementById('icone-olho-aberto');
   var iconeOlhoFechado = document.getElementById('icone-olho-fechado');
 
-  /* Colunas mostradas na tabela — resumidas a pedido: o dado completo (todas
-     as respostas) continua disponível pelo botão Excel e pelo PDF da ficha,
-     que não dependem desta lista. */
-  var COLUNAS_TABELA = [
-    'codigo', 'nome', 'idade', 'estadoCivil',
-    'email', 'cpf', 'status', 'formaPagamento',
-    'dataInscricao', 'dataPagamento'
+  /* Colunas de texto simples da tabela. As demais (situação, forma, data) são
+     campos editáveis, montados um a um em renderizarTabela. O dado completo
+     continua disponível pelo Excel e pelo PDF da ficha. */
+  var COLUNAS_TEXTO = ['codigo', 'nome'];
+  var TOTAL_COLUNAS = 7; // as 2 de texto + situação, forma, data, salvar, ficha
+
+  /* Campos usados na busca — bem mais amplos que as colunas exibidas, pra ainda
+     dar pra achar alguém pelo telefone, e-mail, CPF, igreja, respostas, etc. */
+  var CAMPOS_BUSCA = [
+    'codigo', 'nome', 'apelido', 'email', 'cpf', 'telefone', 'idade', 'estadoCivil',
+    'status', 'formaPagamento', 'dataInscricao', 'dataPagamento',
+    'temFilhos', 'quantosFilhos', 'participaIgreja', 'qualIgreja',
+    'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
   ];
 
-  /* Campos usados na busca — mais amplos que as colunas exibidas, pra ainda
-     dar pra achar alguém pelo telefone, igreja, respostas, etc. */
-  var CAMPOS_BUSCA = COLUNAS_TABELA.concat([
-    'apelido', 'temFilhos', 'quantosFilhos', 'participaIgreja', 'qualIgreja',
-    'telefone', 'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
-  ]);
+  /* Situações que a coordenação pode escolher. Falhou/Expirado/Falha_Checkout
+     ficam de fora: são resposta da PagBank, não decisão administrativa. */
+  var STATUS_MANUAIS = ['Pendente', 'Pago', 'Isento', 'Desistiu', 'Cancelado'];
+
+  var FORMAS_MANUAIS = [
+    '', 'Pix', 'Cartão de crédito', 'Dinheiro', 'Transferência',
+    'Empresa (faturado)', 'Cortesia', 'Outro'
+  ];
+
+  /* Rótulos amigáveis para o que a PagBank grava em Forma_Pagamento. */
+  var NOME_FORMA_AUTOMATICA = { PIX: 'Pix', CREDIT_CARD: 'Cartão de crédito', BOLETO: 'Boleto' };
 
   function tokenSalvo() {
     try { return sessionStorage.getItem('adminToken'); } catch (e) { return null; }
@@ -247,7 +254,7 @@
     corpoTabela.textContent = '';
     var tr = document.createElement('tr');
     var td = document.createElement('td');
-    td.colSpan = COLUNAS_TABELA.length + 1;
+    td.colSpan = TOTAL_COLUNAS;
     td.textContent = texto;
     tr.appendChild(td);
     corpoTabela.appendChild(tr);
@@ -270,31 +277,120 @@
     lista.forEach(function (item) {
       var tr = document.createElement('tr');
 
-      COLUNAS_TABELA.forEach(function (chave) {
+      COLUNAS_TEXTO.forEach(function (chave) {
         var td = document.createElement('td');
-        var valor = item[chave];
-
-        var texto = (valor === null || valor === undefined || valor === '') ? '—' : String(valor);
-        td.textContent = texto;
-
-        if (chave === 'status') {
-          td.className = 'coluna-status status-' + String(item.status || '').toLowerCase();
-        }
-
+        td.textContent = item[chave] || '—';
+        td.title = item[chave] || '';
         tr.appendChild(td);
       });
 
-      var tdAcao = document.createElement('td');
+      var selectStatus = criarSelect(STATUS_MANUAIS, item.status);
+      var selectForma = criarSelect(FORMAS_MANUAIS, item.formaPagamento, function (v) {
+        return NOME_FORMA_AUTOMATICA[v] || (v === '' ? '—' : v);
+      });
+
+      var inputData = document.createElement('input');
+      inputData.type = 'date';
+      inputData.value = item.dataPagamento || '';
+
+      // Ao marcar "Pago", já sugere a data de hoje se ainda não houver nenhuma.
+      selectStatus.addEventListener('change', function () {
+        if (selectStatus.value === 'Pago' && !inputData.value) {
+          inputData.value = new Date().toISOString().slice(0, 10);
+        }
+      });
+
+      var botaoSalvar = document.createElement('button');
+      botaoSalvar.type = 'button';
+      botaoSalvar.className = 'botao-mini';
+      botaoSalvar.textContent = 'Salvar';
+      botaoSalvar.addEventListener('click', function () {
+        salvarLinha(item.codigo, selectStatus.value, selectForma.value, inputData.value, botaoSalvar);
+      });
+
+      var editaveis = [selectStatus, selectForma, inputData, botaoSalvar];
+
+      /* Pagamento confirmado pela PagBank não se mexe por aqui. O servidor
+         também recusa a alteração — desabilitar na tela é só pra deixar claro
+         o motivo, não é o que garante a trava. */
+      if (item.travado) {
+        editaveis.forEach(function (el) {
+          el.disabled = true;
+          el.title = 'Pagamento confirmado pela PagBank — não pode ser alterado por aqui.';
+        });
+      }
+
+      editaveis.forEach(function (el) {
+        var td = document.createElement('td');
+        td.appendChild(el);
+        tr.appendChild(td);
+      });
+
+      var tdFicha = document.createElement('td');
       var botaoPdf = document.createElement('button');
       botaoPdf.type = 'button';
       botaoPdf.className = 'botao-pdf';
       botaoPdf.textContent = 'PDF';
       botaoPdf.addEventListener('click', function () { baixarFichaPdf(item.codigo, botaoPdf); });
-      tdAcao.appendChild(botaoPdf);
-      tr.appendChild(tdAcao);
+      tdFicha.appendChild(botaoPdf);
+      tr.appendChild(tdFicha);
 
       corpoTabela.appendChild(tr);
     });
+  }
+
+  /**
+   * Monta um <select>. Se o valor atual da linha não estiver entre as opções
+   * (ex: um status automático como "Falha_Checkout", ou "PIX" gravado pela
+   * PagBank), ele entra como opção extra já selecionada — senão o navegador
+   * mostraria a primeira opção como escolhida e um clique distraído em "Salvar"
+   * trocaria o valor sem ninguém perceber.
+   */
+  function criarSelect(opcoes, valorAtual, rotuloDe) {
+    var select = document.createElement('select');
+    var valor = (valorAtual === null || valorAtual === undefined) ? '' : String(valorAtual);
+    var lista = opcoes.slice();
+    if (lista.indexOf(valor) === -1) lista.push(valor);
+
+    lista.forEach(function (opcao) {
+      var option = document.createElement('option');
+      option.value = opcao;
+      option.textContent = rotuloDe ? rotuloDe(opcao) : (opcao === '' ? '—' : opcao);
+      if (opcao === valor) option.selected = true;
+      select.appendChild(option);
+    });
+    return select;
+  }
+
+  function salvarLinha(codigo, status, formaPagamento, dataPagamento, botao) {
+    botao.disabled = true;
+    botao.textContent = 'Salvando...';
+
+    apiPost('adminAtualizarInscricao', {
+      token: token,
+      codigo: codigo,
+      campos: { Status: status, Forma_Pagamento: formaPagamento, Data_Pagamento: dataPagamento }
+    })
+      .then(function (resp) {
+        if (resp && resp.sessaoInvalida) {
+          mostrarLogin('Sessão expirada. Faça login novamente.');
+          return;
+        }
+        if (!resp.ok) {
+          botao.disabled = false;
+          botao.textContent = 'Salvar';
+          alert(resp.mensagem || 'Não foi possível salvar.');
+          return;
+        }
+        botao.textContent = 'Salvo!';
+        // Recarrega para mostrar exatamente o que o servidor gravou.
+        setTimeout(carregarInscricoes, 900);
+      })
+      .catch(function () {
+        botao.disabled = false;
+        botao.textContent = 'Salvar';
+        alert('Não conseguimos falar com o servidor. Tente novamente.');
+      });
   }
 
   function baixarFichaPdf(codigo, botao) {
