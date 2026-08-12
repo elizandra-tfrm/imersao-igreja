@@ -403,7 +403,13 @@
              por uma tela de pagamento que não vai usar. */
           recado.textContent = 'Tudo certo! Confirmando sua inscrição...';
           recado.className = 'recado ok';
-          window.location.href = 'sucesso.html?ref=' + encodeURIComponent(resposta.codigo);
+          /* origem=cadastro faz a tela seguinte saber que a pessoa vem daqui, e
+             não de volta do PagBank — muda o texto de carregamento. ja=1 avisa
+             que o CPF já tinha inscrição, para ela entender por que o código não
+             é novo. */
+          var destino = 'sucesso.html?ref=' + encodeURIComponent(resposta.codigo) + '&origem=cadastro';
+          if (resposta.jaInscrita) destino += '&ja=1';
+          window.location.href = destino;
           return;
         }
         if (!resposta.campo || !mostrarErroCampo(resposta.campo, resposta.mensagem)) {

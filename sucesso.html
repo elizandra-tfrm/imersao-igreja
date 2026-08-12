@@ -39,9 +39,9 @@
     <!-- Aguardando confirmação -->
     <div class="painel-zona ativa" id="estado-carregando">
       <div class="rodela"></div>
-      <h1>Confirmando seu pagamento</h1>
+      <h1 id="titulo-carregando">Confirmando seu pagamento</h1>
       <div class="painel-texto">
-        <p>Isso pode levar alguns segundos. Não feche esta página.</p>
+        <p id="texto-carregando">Isso pode levar alguns segundos. Não feche esta página.</p>
       </div>
     </div>
 
@@ -52,8 +52,9 @@
           <path d="M20 6 9 17l-5-5"></path>
         </svg>
       </div>
-      <h1>Inscrição realizada <em>com sucesso!</em></h1>
+      <h1 id="titulo-pago">Inscrição realizada <em>com sucesso!</em></h1>
       <div class="painel-texto">
+        <p id="aviso-ja-inscrita-pago" hidden>Você já tinha uma inscrição com este CPF — não criamos outra, só atualizamos suas respostas.</p>
         <p id="mensagem-pago">Ficamos felizes em receber você na Imersão Mulheres Renovadas para Transformar.</p>
         <p class="ocultavel">Prepare o coração para um dia de comunhão, aprendizado, oração e fortalecimento na presença de Deus. Estamos orando por você e cremos que será um tempo precioso de renovação e transformação.</p>
         <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
@@ -80,8 +81,9 @@
           <path d="M20 6 9 17l-5-5"></path>
         </svg>
       </div>
-      <h1>Inscrição registrada!</h1>
+      <h1 id="titulo-registrada">Inscrição registrada!</h1>
       <div class="painel-texto">
+        <p id="aviso-ja-inscrita" hidden>Você já tinha uma inscrição com este CPF — não criamos outra, só atualizamos suas respostas.</p>
         <p id="mensagem-registrada">Sua vaga está registrada.</p>
         <p class="ocultavel">Guarde o link desta página: é por ele que você volta aqui quando quiser.</p>
       </div>
@@ -176,7 +178,14 @@
 <script src="animacoes.js?v=2"></script>
 <script>
 (function () {
-  var codigo = new URLSearchParams(window.location.search).get('ref');
+  var params = new URLSearchParams(window.location.search);
+  var codigo = params.get('ref');
+  /* Esta tela atende dois momentos diferentes: quem volta do PagBank depois de
+     pagar, e quem acabou de preencher a ficha (index.html manda para cá com
+     origem=cadastro). Sem essa distinção, quem só se inscreveu via "Confirmando
+     seu pagamento", que não tem nada a ver com o que ela fez. */
+  var veioDoCadastro = params.get('origem') === 'cadastro';
+  var jaEstavaInscrita = params.get('ja') === '1';
   var tentativas = 0;
   var MAX_TENTATIVAS = 20; // ~60s (3s cada)
   var ESTADOS = ['estado-carregando', 'estado-pago', 'estado-pronta-para-pagar', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro'];
@@ -194,6 +203,10 @@
       if (resposta.nome) {
         document.getElementById('mensagem-pago').textContent =
           'Ficamos felizes em receber você, ' + resposta.nome.split(' ')[0] + '!';
+      }
+      if (jaEstavaInscrita) {
+        document.getElementById('titulo-pago').textContent = 'Você já estava inscrita';
+        document.getElementById('aviso-ja-inscrita-pago').hidden = false;
       }
       document.getElementById('resumo-codigo').textContent = codigo;
       document.getElementById('resumo-forma').textContent = NOME_FORMA[resposta.formaPagamento] || resposta.formaPagamento || '—';
@@ -219,6 +232,10 @@
       if (resposta.nome) {
         document.getElementById('mensagem-registrada').textContent =
           'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua vaga está registrada.';
+      }
+      if (jaEstavaInscrita) {
+        document.getElementById('titulo-registrada').textContent = 'Você já estava inscrita';
+        document.getElementById('aviso-ja-inscrita').hidden = false;
       }
       document.getElementById('resumo-codigo-pendente').textContent = codigo;
       mostrar('estado-pronta-para-pagar');
@@ -267,6 +284,11 @@
     mostrar('estado-carregando');
     verificar();
   });
+
+  if (veioDoCadastro) {
+    document.getElementById('titulo-carregando').textContent = 'Carregando sua inscrição';
+    document.getElementById('texto-carregando').textContent = 'Só um instante.';
+  }
 
   if (!codigo) { mostrar('estado-erro'); } else { verificar(); }
 })();
