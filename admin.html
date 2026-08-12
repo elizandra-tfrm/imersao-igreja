@@ -56,6 +56,7 @@
           <option value="">Todas as situações</option>
         </select>
         <button type="button" class="botao-mini" id="botao-excel">Exportar Excel</button>
+        <button type="button" class="botao-mini" id="botao-fichas">Fichas em PDF</button>
         <button type="button" class="botao-mini botao-mini--sair" id="botao-sair">Sair</button>
       </div>
     </div>
@@ -129,6 +130,10 @@
      corresponde a exatamente um critério. */
   var filtroCard = '';
 
+  /* O que está à vista neste momento (depois da busca e dos filtros). É essa
+     lista que vira o PDF de fichas — "gerar" significa gerar o que se vê. */
+  var visiveis = [];
+
   var telaLogin = document.getElementById('tela-login');
   var telaPainel = document.getElementById('tela-painel');
   var formLogin = document.getElementById('form-login');
@@ -139,6 +144,7 @@
   var filtroSituacao = document.getElementById('filtro-situacao');
   var botaoSair = document.getElementById('botao-sair');
   var botaoExcel = document.getElementById('botao-excel');
+  var botaoFichas = document.getElementById('botao-fichas');
   var contador = document.getElementById('contador');
   var cards = document.getElementById('admin-cards');
   var cardsExtra = document.getElementById('cards-extra');
@@ -312,6 +318,51 @@
       .catch(function () {
         botaoExcel.disabled = false;
         botaoExcel.textContent = textoOriginal;
+      });
+  });
+
+  /* Gera as fichas do que está na tela — um PDF, uma página por pessoa, em
+     ordem alfabética. Filtrar por "Pagas" antes de clicar gera só as pagas. */
+  botaoFichas.addEventListener('click', function () {
+    if (!visiveis.length) {
+      alert('Não há nenhuma inscrição na tela para gerar ficha.');
+      return;
+    }
+
+    /* O PDF é montado a partir da planilha, não da tela. Sem este aviso, quem
+       acabou de marcar alguém como Pago e ainda não salvou receberia a ficha
+       com a situação antiga, sem entender por quê. */
+    if (Object.keys(pendentes).length && !confirm(
+      'Você tem alterações que ainda não foram salvas.\n\n' +
+      'As fichas são geradas com o que está gravado na planilha, então essas ' +
+      'mudanças não vão aparecer. Gerar assim mesmo?'
+    )) return;
+
+    var textoOriginal = botaoFichas.textContent;
+    botaoFichas.disabled = true;
+    botaoFichas.textContent = 'Gerando ' + visiveis.length + '...';
+
+    var restaurar = function () {
+      botaoFichas.disabled = false;
+      botaoFichas.textContent = textoOriginal;
+    };
+
+    apiPost('adminGerarFichasPdf', {
+      token: token,
+      codigos: visiveis.map(function (item) { return item.codigo; })
+    })
+      .then(function (resp) {
+        if (resp && resp.sessaoInvalida) {
+          mostrarLogin('Sessão expirada. Faça login novamente.');
+          return;
+        }
+        restaurar();
+        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível gerar as fichas.'); return; }
+        baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
+      })
+      .catch(function () {
+        restaurar();
+        alert('Não conseguimos gerar as fichas. Se forem muitas, tente filtrar e gerar em partes.');
       });
   });
 
@@ -712,6 +763,8 @@
         return valor && String(valor).toLowerCase().indexOf(termo) !== -1;
       });
     });
+
+    visiveis = filtradas;
 
     contador.textContent = filtradas.length === todasInscricoes.length
       ? todasInscricoes.length + ' inscrição(ões)'
