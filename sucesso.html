@@ -101,6 +101,42 @@
       </div>
     </div>
 
+    <!-- Isenta: a coordenação liberou a participação sem pagamento -->
+    <div class="painel-zona" id="estado-isento">
+      <div class="painel-icone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+      </div>
+      <h1>Inscrição confirmada!</h1>
+      <div class="painel-texto">
+        <p id="mensagem-isento">Sua participação está garantida.</p>
+        <p class="ocultavel">Não há pagamento a fazer — a coordenação já cuidou disso.</p>
+        <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
+      </div>
+      <div class="painel-dados">
+        <dl class="resumo">
+          <div class="linha"><dt>Código da inscrição</dt><dd id="resumo-codigo-isento">—</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Desistência registrada pela coordenação -->
+    <div class="painel-zona" id="estado-desistiu">
+      <div class="painel-icone painel-icone--espera">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path>
+        </svg>
+      </div>
+      <h1>Esta inscrição não está mais ativa</h1>
+      <div class="painel-texto">
+        <p>Consta como desistência aqui. Se isso não estiver certo, fale com a coordenação que a gente resolve.</p>
+      </div>
+      <div class="painel-acoes">
+        <a class="botao botao--suave" href="https://wa.me/5567996083444" target="_blank" rel="noopener">Falar no WhatsApp</a>
+      </div>
+    </div>
+
     <!-- Pagamento recusado -->
     <div class="painel-zona" id="estado-falhou">
       <div class="painel-icone painel-icone--alerta">
@@ -189,7 +225,7 @@
   var jaEstavaInscrita = params.get('ja') === '1';
   var tentativas = 0;
   var MAX_TENTATIVAS = 20; // ~60s (3s cada)
-  var ESTADOS = ['estado-carregando', 'estado-pago', 'estado-pronta-para-pagar', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro'];
+  var ESTADOS = ['estado-carregando', 'estado-pago', 'estado-isento', 'estado-desistiu', 'estado-pronta-para-pagar', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro'];
 
   function mostrar(id) {
     ESTADOS.forEach(function (elId) {
@@ -215,6 +251,22 @@
       mostrar('estado-pago');
       return;
     }
+    /* Isento e Desistiu são decisões da coordenação. Sem tratá-las aqui elas
+       caíam no caso genérico lá embaixo e a pessoa via o botão "Pagar agora" —
+       ou seja, alguém com cortesia seria convidada a pagar. */
+    if (resposta.status === 'Isento') {
+      if (resposta.nome) {
+        document.getElementById('mensagem-isento').textContent =
+          'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua participação está garantida.';
+      }
+      document.getElementById('resumo-codigo-isento').textContent = codigo;
+      mostrar('estado-isento');
+      return;
+    }
+    if (resposta.status === 'Desistiu') {
+      mostrar('estado-desistiu');
+      return;
+    }
     if (resposta.status === 'Falhou') {
       document.getElementById('mensagem-falha').textContent = resposta.erro || 'Pagamento recusado pela operadora.';
       mostrar('estado-falhou');
@@ -229,7 +281,10 @@
        botão de pagar e para o laço. Repare que ela não afirma "não pago": quem
        pagou em dinheiro ou por terceiros só ainda não foi marcado pela
        coordenação, e ver "pendente" assustaria à toa. */
-    if (!resposta.temCheckout) {
+    /* Falha_Checkout entra aqui junto: é um status legado (nada mais o define),
+       mas linhas antigas ainda o têm e, sem isso, ficariam consultando em laço
+       para sempre em vez de oferecer o botão de pagar. */
+    if (!resposta.temCheckout || resposta.status === 'Falha_Checkout') {
       if (resposta.nome) {
         document.getElementById('mensagem-registrada').textContent =
           'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua vaga está registrada.';
