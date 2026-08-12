@@ -94,11 +94,13 @@
             <div class="dupla">
               <div class="campo">
                 <label for="idade">Idade</label>
-                <input type="text" id="idade" name="idade" inputmode="numeric" maxlength="3" placeholder="Ex: 38">
+                <input type="text" id="idade" name="idade" inputmode="numeric" maxlength="3" placeholder="Ex: 38" required>
+                <div class="erro-campo" id="erro-idade"></div>
               </div>
               <div class="campo">
                 <label for="estadoCivil">Estado civil</label>
-                <input type="text" id="estadoCivil" name="estadoCivil" placeholder="Ex: Casada">
+                <input type="text" id="estadoCivil" name="estadoCivil" placeholder="Ex: Casada" required>
+                <div class="erro-campo" id="erro-estadoCivil"></div>
               </div>
             </div>
 
@@ -112,6 +114,7 @@
               <div class="condicional" id="bloco-quantosFilhos" hidden>
                 <label for="quantosFilhos">Se sim, quantos?</label>
                 <input type="text" id="quantosFilhos" name="quantosFilhos" inputmode="numeric" maxlength="2">
+                <div class="erro-campo" id="erro-quantosFilhos"></div>
               </div>
             </div>
 
@@ -125,6 +128,7 @@
               <div class="condicional" id="bloco-qualIgreja" hidden>
                 <label for="qualIgreja">Se sim, qual?</label>
                 <input type="text" id="qualIgreja" name="qualIgreja">
+                <div class="erro-campo" id="erro-qualIgreja"></div>
               </div>
             </div>
 
@@ -158,18 +162,21 @@
           <div class="campos">
             <div class="campo">
               <label for="vidaComDeus">Em uma frase, como você descreveria hoje a sua vida com Deus?</label>
-              <textarea id="vidaComDeus" name="vidaComDeus" rows="2"></textarea>
+              <textarea id="vidaComDeus" name="vidaComDeus" rows="2" required></textarea>
+              <div class="erro-campo" id="erro-vidaComDeus"></div>
             </div>
 
             <div class="campo">
               <label for="areaCura">Existe alguma área da sua vida em que você sente necessidade de cura, transformação, fortalecimento ou direcionamento?</label>
-              <textarea id="areaCura" name="areaCura" rows="3"></textarea>
+              <textarea id="areaCura" name="areaCura" rows="3" required></textarea>
+              <div class="erro-campo" id="erro-areaCura"></div>
               <p class="dica">Você pode responder brevemente e não precisa compartilhar detalhes que não queira.</p>
             </div>
 
             <div class="campo">
               <label for="motivacao">O que motivou você a participar desta imersão?</label>
-              <textarea id="motivacao" name="motivacao" rows="3"></textarea>
+              <textarea id="motivacao" name="motivacao" rows="3" required></textarea>
+              <div class="erro-campo" id="erro-motivacao"></div>
             </div>
           </div>
         </section>
@@ -188,13 +195,15 @@
           <div class="campos">
             <div class="campo">
               <label for="expectativa">O que você espera receber ou levar desta imersão para a sua vida?</label>
-              <textarea id="expectativa" name="expectativa" rows="3"></textarea>
+              <textarea id="expectativa" name="expectativa" rows="3" required></textarea>
+              <div class="erro-campo" id="erro-expectativa"></div>
             </div>
 
             <div class="campo">
               <label for="necessidadeApoio">Existe alguma informação que a coordenação precisa saber para acolher você melhor durante a imersão?</label>
-              <textarea id="necessidadeApoio" name="necessidadeApoio" rows="3"></textarea>
-              <p class="dica">Exemplos: limitação física, necessidade especial, restrição alimentar, questão emocional que considere importante informar ou alguma necessidade específica de apoio.</p>
+              <textarea id="necessidadeApoio" name="necessidadeApoio" rows="3" required></textarea>
+              <div class="erro-campo" id="erro-necessidadeApoio"></div>
+              <p class="dica">Exemplos: limitação física, necessidade especial, restrição alimentar, questão emocional que considere importante informar ou alguma necessidade específica de apoio. Se não houver nada, escreva "não há".</p>
             </div>
           </div>
         </section>
@@ -279,7 +288,14 @@
   var form = document.getElementById('form-inscricao');
   var botao = document.getElementById('botao-enviar');
   var recado = document.getElementById('recado');
-  var camposComErro = ['nome', 'telefone', 'email', 'cpf', 'temFilhos', 'participaIgreja'];
+  /* Todos os campos que podem receber uma mensagem de erro embaixo (cada um tem
+     um <div class="erro-campo" id="erro-XXX">). Só o apelido fica de fora — é o
+     único campo opcional do formulário. */
+  var camposComErro = [
+    'nome', 'telefone', 'idade', 'estadoCivil', 'temFilhos', 'quantosFilhos',
+    'participaIgreja', 'qualIgreja', 'email', 'cpf',
+    'vidaComDeus', 'areaCura', 'motivacao', 'expectativa', 'necessidadeApoio'
+  ];
 
   /* Máscaras de digitação (mascaras.js) */
   aplicarMascara(document.getElementById('cpf'), mascaraCPF);
