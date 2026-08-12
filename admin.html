@@ -317,7 +317,7 @@
       botaoSalvar.className = 'botao-mini';
       botaoSalvar.textContent = 'Salvar';
       botaoSalvar.addEventListener('click', function () {
-        salvarLinha(item.codigo, selectStatus.value, selectForma.value, inputData.value, botaoSalvar);
+        salvarLinha(item, selectStatus.value, selectForma.value, inputData.value, botaoSalvar);
       });
 
       var editaveis = [selectStatus, selectForma, inputData, botaoSalvar];
@@ -389,13 +389,13 @@
     return select;
   }
 
-  function salvarLinha(codigo, status, formaPagamento, dataPagamento, botao) {
+  function salvarLinha(item, status, formaPagamento, dataPagamento, botao) {
     botao.disabled = true;
     botao.textContent = 'Salvando...';
 
     apiPost('adminAtualizarInscricao', {
       token: token,
-      codigo: codigo,
+      codigo: item.codigo,
       campos: { Status: status, Forma_Pagamento: formaPagamento, Data_Pagamento: dataPagamento }
     })
       .then(function (resp) {
@@ -409,9 +409,20 @@
           alert(resp.mensagem || 'Não foi possível salvar.');
           return;
         }
+
+        /* Antes a tabela era recarregada aqui, e isso apagava o que estivesse
+           preenchido nas outras linhas ainda não salvas — quem confirma vários
+           pagamentos de uma vez perdia o trabalho a cada clique. Em vez disso,
+           só a linha salva é atualizada na memória, o que mantém a busca e o
+           filtro coerentes sem mexer no resto da tela. */
+        item.status = status;
+        item.formaPagamento = formaPagamento;
+        item.dataPagamento = dataPagamento;
+        item.origem = status && status !== 'Pendente' ? 'Manual' : '—';
+
+        botao.disabled = false;
         botao.textContent = 'Salvo!';
-        // Recarrega para mostrar exatamente o que o servidor gravou.
-        setTimeout(carregarInscricoes, 900);
+        setTimeout(function () { botao.textContent = 'Salvar'; }, 2000);
       })
       .catch(function () {
         botao.disabled = false;
