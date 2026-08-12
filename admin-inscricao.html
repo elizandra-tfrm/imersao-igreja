@@ -127,6 +127,18 @@
 
   var COLUNAS_BUSCA = ['codigo', 'nome', 'apelido', 'email', 'cpf', 'telefone'];
 
+  /* Guarda a sessão só nesta aba do navegador, para um F5 não obrigar a fazer
+     login de novo (mesmo comportamento do painel do sistema principal). */
+  function tokenSalvo() {
+    try { return sessionStorage.getItem('adminTokenPaliativo'); } catch (e) { return null; }
+  }
+  function salvarToken(t) {
+    try { sessionStorage.setItem('adminTokenPaliativo', t); } catch (e) { /* sem sessionStorage: sessão dura só esta execução */ }
+  }
+  function limparToken() {
+    try { sessionStorage.removeItem('adminTokenPaliativo'); } catch (e) {}
+  }
+
   function esconderTudo() {
     telaCriarLogin.hidden = true;
     telaLogin.hidden = true;
@@ -135,6 +147,7 @@
 
   function mostrarLogin(mensagem) {
     token = null;
+    limparToken();
     esconderTudo();
     telaLogin.hidden = false;
     erroLogin.textContent = mensagem || '';
@@ -164,14 +177,20 @@
     iconeOlhoFechado.hidden = !vaiMostrar;
   });
 
-  // A tela de login já aparece por padrão (ver HTML) — só troca pra "criar
-  // login" no raro caso de ainda não haver credenciais configuradas.
-  apiGet('adminStatusLogin').then(function (resp) {
-    if (resp && resp.ok && !resp.configurado) {
-      telaLogin.hidden = true;
-      telaCriarLogin.hidden = false;
-    }
-  }).catch(function () { /* mantém a tela de login; erro real aparece ao tentar entrar */ });
+  // Retoma a sessão se esta mesma aba já tinha um token guardado.
+  token = tokenSalvo();
+  if (token) {
+    mostrarPainel();
+  } else {
+    // A tela de login já aparece por padrão (ver HTML) — só troca pra "criar
+    // login" no raro caso de ainda não haver credenciais configuradas.
+    apiGet('adminStatusLogin').then(function (resp) {
+      if (resp && resp.ok && !resp.configurado) {
+        telaLogin.hidden = true;
+        telaCriarLogin.hidden = false;
+      }
+    }).catch(function () { /* mantém a tela de login; erro real aparece ao tentar entrar */ });
+  }
 
   formCriarLogin.addEventListener('submit', function (evento) {
     evento.preventDefault();
@@ -216,6 +235,7 @@
         return;
       }
       token = resp.token;
+      salvarToken(token);
       document.getElementById('senha').value = '';
       mostrarPainel();
     }).catch(function () {
