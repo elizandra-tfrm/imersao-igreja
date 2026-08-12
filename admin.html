@@ -66,6 +66,7 @@
             <th>Situação</th>
             <th>Forma</th>
             <th>Data pgto.</th>
+            <th>Origem</th>
             <th>Salvar</th>
             <th>Ficha</th>
           </tr>
@@ -101,7 +102,7 @@
      campos editáveis, montados um a um em renderizarTabela. O dado completo
      continua disponível pelo Excel e pelo PDF da ficha. */
   var COLUNAS_TEXTO = ['codigo', 'nome'];
-  var TOTAL_COLUNAS = 7; // as 2 de texto + situação, forma, data, salvar, ficha
+  var TOTAL_COLUNAS = 8; // as 2 de texto + situação, forma, data, origem, salvar, ficha
 
   /* Campos usados na busca — bem mais amplos que as colunas exibidas, pra ainda
      dar pra achar alguém pelo telefone, e-mail, CPF, igreja, respostas, etc. */
@@ -327,11 +328,26 @@
         });
       }
 
-      editaveis.forEach(function (el) {
+      // Situação, forma e data ficam lado a lado; a origem entra entre a data e
+      // o botão Salvar, porque é ela que explica por que a linha está travada.
+      [selectStatus, selectForma, inputData].forEach(function (el) {
         var td = document.createElement('td');
         td.appendChild(el);
         tr.appendChild(td);
       });
+
+      var tdOrigem = document.createElement('td');
+      tdOrigem.textContent = item.origem || '—';
+      if (item.origem === 'PagBank') {
+        tdOrigem.title = 'Pagamento confirmado pela PagBank.';
+      } else if (item.origem === 'Manual') {
+        tdOrigem.title = 'Situação definida pela coordenação, sem passar pela PagBank.';
+      }
+      tr.appendChild(tdOrigem);
+
+      var tdSalvar = document.createElement('td');
+      tdSalvar.appendChild(botaoSalvar);
+      tr.appendChild(tdSalvar);
 
       var tdFicha = document.createElement('td');
       var botaoPdf = document.createElement('button');
