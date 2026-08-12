@@ -276,10 +276,11 @@
     <!-- ── Confirmação: código + link de pagamento + WhatsApp ────── -->
     <section class="secao vidro" id="bloco-confirmacao" hidden>
       <div class="secao-cabeca">
-        <h2>Inscrição registrada!</h2>
+        <h2 id="titulo-confirmacao">Inscrição registrada!</h2>
       </div>
       <div class="secao-notas">
-        <p class="secao-nota">Faltam só 2 passos pra confirmar sua vaga.</p>
+        <p class="secao-nota" id="nota-confirmacao">Faltam só 2 passos pra confirmar sua vaga.</p>
+        <p class="secao-nota" id="nota-ja-inscrita" hidden>Você já estava inscrita com este CPF — não criamos outra inscrição, só atualizamos suas respostas com o que você acabou de enviar.</p>
       </div>
       <div class="campos">
         <div class="campo">
@@ -287,16 +288,23 @@
           <p style="font-family:monospace;font-size:1.2em;font-weight:bold;" id="texto-codigo"></p>
         </div>
       </div>
+
+      <!-- Mostrado no lugar dos passos de pagamento quando o pagamento já está registrado. -->
+      <div class="acao" id="bloco-ja-pago" hidden>
+        <p class="destaque">Seu pagamento já está confirmado. Não precisa fazer mais nada.</p>
+        <p class="dica">Nos vemos no dia 05 de setembro de 2026!</p>
+      </div>
       <div class="acao">
         <button type="button" class="botao botao--suave" id="botao-copiar-link">Copiar link desta página</button>
         <p class="dica" id="dica-copiar-link">Se você sair daqui antes de terminar, cole esse link no WhatsApp de si mesma (ou nas Notas do celular) pra voltar depois com os botões de pagamento prontos de novo.</p>
       </div>
-      <div class="acao">
+      <div class="acao passo-pagamento">
         <span class="rotulo-campo">Passo 1 — Pague pelo link da PagBank</span>
         <a class="botao" id="link-pagamento" href="#" target="_blank" rel="noopener">Ir para pagamento (Pix ou cartão)</a>
         <p class="dica">Abre em outra aba. Quando terminar de pagar, <strong>volte para esta página</strong> (não feche esta aba).</p>
+        <p class="dica">Já pagou de outra forma (dinheiro, transferência, ou alguém vai pagar por você)? Pode ignorar este passo — a coordenação confirma sua inscrição.</p>
       </div>
-      <div class="acao" style="margin-top:14px;">
+      <div class="acao passo-pagamento" style="margin-top:14px;">
         <span class="rotulo-campo">Passo 2 — Depois de pagar, mande o comprovante</span>
         <a class="botao" id="link-whatsapp" href="#" target="_blank" rel="noopener">Mandar comprovante no WhatsApp</a>
         <p class="dica">Vai abrir o WhatsApp da Lilian com uma mensagem pronta — só falta você <strong>anexar o print/comprovante do pagamento</strong> antes de enviar. É assim que confirmamos sua inscrição.</p>
@@ -395,14 +403,38 @@
 
   function valor(id) { return document.getElementById(id).value; }
 
-  function mostrarConfirmacao(codigo, paymentUrl) {
+  /**
+   * `resposta` é opcional: quando a pessoa volta pelo link salvo (?ref=CÓDIGO) o
+   * site não sabe a situação dela, então mostra a tela normal de pagamento —
+   * nunca uma afirmação de que ela não pagou, que é coisa que só a coordenação
+   * sabe (pagamento em dinheiro, por terceiro, etc. leva tempo até ser marcado).
+   */
+  function mostrarConfirmacao(codigo, resposta) {
+    resposta = resposta || {};
     form.hidden = true;
     document.getElementById('texto-codigo').textContent = codigo;
-    document.getElementById('link-pagamento').href = paymentUrl || LINK_PAGAMENTO_PIX;
+    document.getElementById('link-pagamento').href = resposta.paymentUrl || LINK_PAGAMENTO_PIX;
 
     var mensagem = 'Olá! Fiz minha inscrição na Imersão (código ' + codigo + ') e acabei de pagar. Segue o comprovante:';
     document.getElementById('link-whatsapp').href =
       'https://wa.me/5567996083444?text=' + encodeURIComponent(mensagem);
+
+    if (resposta.jaInscrita) {
+      document.getElementById('titulo-confirmacao').textContent = 'Você já estava inscrita';
+      document.getElementById('nota-confirmacao').hidden = true;
+      document.getElementById('nota-ja-inscrita').hidden = false;
+    }
+
+    if (resposta.jaPago) {
+      // Pagamento registrado é coisa que o sistema sabe com certeza — aí sim
+      // vale afirmar, e os passos de pagamento saem da frente.
+      document.getElementById('nota-confirmacao').hidden = true;
+      document.getElementById('bloco-ja-pago').hidden = false;
+      Array.prototype.forEach.call(
+        document.querySelectorAll('.passo-pagamento'),
+        function (el) { el.hidden = true; }
+      );
+    }
 
     document.getElementById('bloco-confirmacao').hidden = false;
     document.getElementById('bloco-confirmacao').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -460,7 +492,7 @@
           if (window.history && window.history.replaceState) {
             window.history.replaceState(null, '', '?ref=' + encodeURIComponent(resposta.codigo));
           }
-          mostrarConfirmacao(resposta.codigo, resposta.paymentUrl);
+          mostrarConfirmacao(resposta.codigo, resposta);
           return;
         }
         if (!resposta.campo || !mostrarErroCampo(resposta.campo, resposta.mensagem)) {
@@ -470,7 +502,11 @@
         liberarBotao();
       })
       .catch(function () {
-        recado.textContent = 'Não conseguimos falar com o servidor. Verifique sua conexão e tente novamente.';
+        /* A conexão pode ter caído *depois* de o servidor gravar a inscrição, e o
+           antigo "tente novamente" levava a pessoa a reenviar e duplicar. Hoje o
+           servidor não duplica mais (reconhece o CPF), mas a mensagem também
+           deixou de empurrar para o reenvio às cegas. */
+        recado.textContent = 'Não conseguimos confirmar agora. Recarregue a página antes de tentar de novo — sua inscrição pode já ter sido registrada.';
         recado.className = 'recado erro';
         liberarBotao();
       });
