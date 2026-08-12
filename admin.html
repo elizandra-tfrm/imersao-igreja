@@ -247,7 +247,14 @@
         contador.textContent = todasInscricoes.length + ' inscrição(ões)';
         renderizarTabela(todasInscricoes);
       })
-      .catch(function () { /* sessão expirada já tratada em apiGetAdmin */ });
+      .catch(function (erro) {
+        // Sessão expirada já foi tratada em apiGetAdmin (voltou para o login).
+        // Qualquer outra falha precisa aparecer: um catch vazio aqui deixava a
+        // tela em "Carregando inscrições..." para sempre, sem dizer o motivo.
+        if (erro && erro.message === 'sessao_invalida') return;
+        contador.textContent = '';
+        mostrarLinhaUnica('Não foi possível carregar: ' + ((erro && erro.message) || 'erro desconhecido') + '. Tente recarregar a página.');
+      });
   }
 
   function mostrarLinhaUnica(texto) {
