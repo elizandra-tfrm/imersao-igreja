@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=18">
+<link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body class="admin">
 
@@ -60,6 +60,32 @@
       </div>
     </div>
 
+    <!-- Os três primeiros são botões: clicar filtra a tabela naquele grupo.
+         "Arrecadado" é só leitura — não existe filtro "por dinheiro". -->
+    <div class="admin-cards" id="admin-cards" hidden>
+      <button type="button" class="card-metrica" data-card="todas" aria-pressed="false">
+        <span class="card-rotulo">Inscrições</span>
+        <strong class="card-numero" id="card-todas-numero">—</strong>
+        <span class="card-nota"></span>
+      </button>
+      <button type="button" class="card-metrica card-metrica--pagas" data-card="pagas" aria-pressed="false">
+        <span class="card-rotulo">Pagas</span>
+        <strong class="card-numero" id="card-pagas-numero">—</strong>
+        <span class="card-nota" id="card-pagas-nota"></span>
+      </button>
+      <button type="button" class="card-metrica card-metrica--aguardando" data-card="aguardando" aria-pressed="false">
+        <span class="card-rotulo">Aguardando</span>
+        <strong class="card-numero" id="card-aguardando-numero">—</strong>
+        <span class="card-nota" id="card-aguardando-nota"></span>
+      </button>
+      <div class="card-metrica card-metrica--dinheiro">
+        <span class="card-rotulo">Arrecadado</span>
+        <strong class="card-numero" id="card-dinheiro-numero">—</strong>
+        <span class="card-nota" id="card-dinheiro-nota"></span>
+      </div>
+    </div>
+    <p class="admin-cards-extra" id="cards-extra" hidden></p>
+
     <div class="admin-tabela-wrap">
       <table class="admin-tabela">
         <thead>
@@ -70,12 +96,16 @@
             <th>Forma</th>
             <th>Data pgto.</th>
             <th>Origem</th>
-            <th>Salvar</th>
             <th>Ficha</th>
           </tr>
         </thead>
         <tbody id="corpo-tabela"></tbody>
       </table>
+    </div>
+
+    <div class="admin-rodape-tabela">
+      <span class="rodape-aviso" id="aviso-alteracoes" hidden></span>
+      <button type="button" class="botao-mini botao-salvar-tudo" id="botao-salvar-tudo" disabled>Salvar alterações</button>
     </div>
   </div>
 
@@ -85,6 +115,17 @@
 (function () {
   var token = null;
   var todasInscricoes = [];
+
+  /* Alterações feitas na tela e ainda não gravadas: código -> campos.
+     Ficam aqui, e não só nos campos do HTML, porque a tabela é remontada a cada
+     busca ou filtro — sem isso, digitar na busca apagaria o que a coordenação
+     tivesse acabado de preencher nas outras linhas. */
+  var pendentes = {};
+
+  /* Filtro vindo dos cards ('pagas' / 'aguardando'). É um caminho alternativo ao
+     <select> de situação: usar um limpa o outro, então o que está na tela sempre
+     corresponde a exatamente um critério. */
+  var filtroCard = '';
 
   var telaLogin = document.getElementById('tela-login');
   var telaPainel = document.getElementById('tela-painel');
@@ -97,6 +138,17 @@
   var botaoSair = document.getElementById('botao-sair');
   var botaoExcel = document.getElementById('botao-excel');
   var contador = document.getElementById('contador');
+  var cards = document.getElementById('admin-cards');
+  var cardsExtra = document.getElementById('cards-extra');
+  var cardTodasNumero = document.getElementById('card-todas-numero');
+  var cardPagasNumero = document.getElementById('card-pagas-numero');
+  var cardPagasNota = document.getElementById('card-pagas-nota');
+  var cardAguardandoNumero = document.getElementById('card-aguardando-numero');
+  var cardAguardandoNota = document.getElementById('card-aguardando-nota');
+  var cardDinheiroNumero = document.getElementById('card-dinheiro-numero');
+  var cardDinheiroNota = document.getElementById('card-dinheiro-nota');
+  var botaoSalvarTudo = document.getElementById('botao-salvar-tudo');
+  var avisoAlteracoes = document.getElementById('aviso-alteracoes');
   var botaoOlho = document.getElementById('botao-olho');
   var campoSenha = document.getElementById('senha');
   var iconeOlhoAberto = document.getElementById('icone-olho-aberto');
@@ -106,7 +158,7 @@
      campos editáveis, montados um a um em renderizarTabela. O dado completo
      continua disponível pelo Excel e pelo PDF da ficha. */
   var COLUNAS_TEXTO = ['codigo', 'nome'];
-  var TOTAL_COLUNAS = 8; // as 2 de texto + situação, forma, data, origem, salvar, ficha
+  var TOTAL_COLUNAS = 7; // as 2 de texto + situação, forma, data, origem, ficha
 
   /* Campos usados na busca — bem mais amplos que as colunas exibidas, pra ainda
      dar pra achar alguém pelo telefone, e-mail, CPF, igreja, respostas, etc. */
@@ -128,6 +180,27 @@
 
   /* Rótulos amigáveis para o que a PagBank grava em Forma_Pagamento. */
   var NOME_FORMA_AUTOMATICA = { PIX: 'Pix', CREDIT_CARD: 'Cartão de crédito', BOLETO: 'Boleto' };
+
+  /* Situações de quem não deve mais nada — não entram em "aguardando" nem somam
+     no valor previsto. Todo o resto (Pendente, e também Falhou/Expirado/
+     Falha_Checkout, que são tentativas que não se concluíram) ainda deve. */
+  var STATUS_SEM_COBRANCA = ['Isento', 'Desistiu', 'Cancelado'];
+
+  var ROTULO_SEM_COBRANCA = {
+    Isento: ['isenta', 'isentas'],
+    Desistiu: ['desistiu', 'desistiram'],
+    Cancelado: ['cancelada', 'canceladas']
+  };
+
+  function grupoDaSituacao(status) {
+    if (status === 'Pago') return 'pagas';
+    if (STATUS_SEM_COBRANCA.indexOf(status) !== -1) return 'outras';
+    return 'aguardando';
+  }
+
+  function formatarReais(centavos) {
+    return (Number(centavos || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
 
   function tokenSalvo() {
     try { return sessionStorage.getItem('adminToken'); } catch (e) { return null; }
@@ -249,7 +322,10 @@
           return;
         }
         todasInscricoes = resp.inscricoes || [];
+        pendentes = {};
+        atualizarBotaoSalvar();
         preencherFiltroSituacao();
+        atualizarCards();
         aplicarFiltros();
       })
       .catch(function (erro) {
@@ -296,31 +372,38 @@
         tr.appendChild(td);
       });
 
-      var selectStatus = criarSelect(STATUS_MANUAIS, item.status);
-      var selectForma = criarSelect(FORMAS_MANUAIS, item.formaPagamento, function (v) {
+      /* Se esta linha tem alteração pendente, os campos voltam com o que foi
+         digitado, não com o que veio do servidor — a tabela é remontada a cada
+         busca/filtro e o trabalho não pode se perder no caminho. */
+      var pendente = pendentes[item.codigo];
+
+      var selectStatus = criarSelect(STATUS_MANUAIS, pendente ? pendente.Status : item.status);
+      var selectForma = criarSelect(FORMAS_MANUAIS, pendente ? pendente.Forma_Pagamento : item.formaPagamento, function (v) {
         return NOME_FORMA_AUTOMATICA[v] || (v === '' ? '—' : v);
       });
 
       var inputData = document.createElement('input');
       inputData.type = 'date';
-      inputData.value = item.dataPagamento || '';
+      inputData.value = (pendente ? pendente.Data_Pagamento : item.dataPagamento) || '';
 
       // Ao marcar "Pago", já sugere a data de hoje se ainda não houver nenhuma.
+      // Registrado antes do rastreamento abaixo, para que a data já sugerida
+      // entre na alteração pendente junto com a situação.
       selectStatus.addEventListener('change', function () {
         if (selectStatus.value === 'Pago' && !inputData.value) {
           inputData.value = new Date().toISOString().slice(0, 10);
         }
       });
 
-      var botaoSalvar = document.createElement('button');
-      botaoSalvar.type = 'button';
-      botaoSalvar.className = 'botao-mini';
-      botaoSalvar.textContent = 'Salvar';
-      botaoSalvar.addEventListener('click', function () {
-        salvarLinha(item, selectStatus.value, selectForma.value, inputData.value, botaoSalvar);
+      [selectStatus, selectForma, inputData].forEach(function (campo) {
+        campo.addEventListener('change', function () {
+          registrarAlteracao(item, tr, selectStatus, selectForma, inputData);
+        });
       });
 
-      var editaveis = [selectStatus, selectForma, inputData, botaoSalvar];
+      if (pendente) tr.classList.add('linha-alterada');
+
+      var editaveis = [selectStatus, selectForma, inputData];
 
       /* Pagamento confirmado pela PagBank não se mexe por aqui. O servidor
          também recusa a alteração — desabilitar na tela é só pra deixar claro
@@ -332,8 +415,8 @@
         });
       }
 
-      // Situação, forma e data ficam lado a lado; a origem entra entre a data e
-      // o botão Salvar, porque é ela que explica por que a linha está travada.
+      // Situação, forma e data ficam lado a lado; a origem vem logo depois,
+      // porque é ela que explica por que uma linha está travada.
       [selectStatus, selectForma, inputData].forEach(function (el) {
         var td = document.createElement('td');
         td.appendChild(el);
@@ -348,10 +431,6 @@
         tdOrigem.title = 'Situação definida pela coordenação, sem passar pela PagBank.';
       }
       tr.appendChild(tdOrigem);
-
-      var tdSalvar = document.createElement('td');
-      tdSalvar.appendChild(botaoSalvar);
-      tr.appendChild(tdSalvar);
 
       var tdFicha = document.createElement('td');
       var botaoPdf = document.createElement('button');
@@ -389,47 +468,188 @@
     return select;
   }
 
-  function salvarLinha(item, status, formaPagamento, dataPagamento, botao) {
-    botao.disabled = true;
-    botao.textContent = 'Salvando...';
+  /**
+   * Compara os campos da linha com o que veio do servidor. Igual de novo (a
+   * pessoa desfez a mudança na mão) tira a linha da lista de pendentes, para o
+   * contador do botão nunca prometer mais do que há de fato para gravar.
+   */
+  function registrarAlteracao(item, tr, selectStatus, selectForma, inputData) {
+    var mudou = selectStatus.value !== (item.status || '')
+      || selectForma.value !== (item.formaPagamento || '')
+      || inputData.value !== (item.dataPagamento || '');
 
-    apiPost('adminAtualizarInscricao', {
-      token: token,
-      codigo: item.codigo,
-      campos: { Status: status, Forma_Pagamento: formaPagamento, Data_Pagamento: dataPagamento }
-    })
+    if (mudou) {
+      pendentes[item.codigo] = {
+        Status: selectStatus.value,
+        Forma_Pagamento: selectForma.value,
+        Data_Pagamento: inputData.value
+      };
+    } else {
+      delete pendentes[item.codigo];
+    }
+
+    tr.classList.toggle('linha-alterada', mudou);
+    atualizarBotaoSalvar();
+  }
+
+  function atualizarBotaoSalvar() {
+    var quantas = Object.keys(pendentes).length;
+
+    botaoSalvarTudo.disabled = quantas === 0;
+    botaoSalvarTudo.textContent = quantas === 0
+      ? 'Salvar alterações'
+      : 'Salvar ' + quantas + (quantas === 1 ? ' alteração' : ' alterações');
+
+    avisoAlteracoes.hidden = quantas === 0;
+    avisoAlteracoes.textContent = quantas === 1
+      ? '1 linha alterada e ainda não salva.'
+      : quantas + ' linhas alteradas e ainda não salvas.';
+  }
+
+  /**
+   * Grava todas as alterações pendentes numa requisição só. Uma chamada de Apps
+   * Script por linha levaria dezenas de segundos para as dez ou vinte
+   * confirmações de Pix que a coordenação faz de uma sentada.
+   */
+  function salvarTudo() {
+    var codigos = Object.keys(pendentes);
+    if (!codigos.length) return;
+
+    var alteracoes = codigos.map(function (codigo) {
+      return { codigo: codigo, campos: pendentes[codigo] };
+    });
+
+    botaoSalvarTudo.disabled = true;
+    botaoSalvarTudo.textContent = 'Salvando...';
+
+    apiPost('adminAtualizarInscricoes', { token: token, alteracoes: alteracoes })
       .then(function (resp) {
         if (resp && resp.sessaoInvalida) {
           mostrarLogin('Sessão expirada. Faça login novamente.');
           return;
         }
         if (!resp.ok) {
-          botao.disabled = false;
-          botao.textContent = 'Salvar';
+          atualizarBotaoSalvar();
           alert(resp.mensagem || 'Não foi possível salvar.');
           return;
         }
 
-        /* Antes a tabela era recarregada aqui, e isso apagava o que estivesse
-           preenchido nas outras linhas ainda não salvas — quem confirma vários
-           pagamentos de uma vez perdia o trabalho a cada clique. Em vez disso,
-           só a linha salva é atualizada na memória, o que mantém a busca e o
-           filtro coerentes sem mexer no resto da tela. */
-        item.status = status;
-        item.formaPagamento = formaPagamento;
-        item.dataPagamento = dataPagamento;
-        item.origem = status && status !== 'Pendente' ? 'Manual' : '—';
+        /* Só saem de `pendentes` as linhas que o servidor confirmou ter gravado.
+           As que falharam continuam marcadas na tela — passar a impressão de que
+           foram salvas seria pior do que o erro em si. */
+        var porCodigo = {};
+        todasInscricoes.forEach(function (i) { porCodigo[i.codigo] = i; });
 
-        botao.disabled = false;
-        botao.textContent = 'Salvo!';
-        setTimeout(function () { botao.textContent = 'Salvar'; }, 2000);
+        (resp.codigosSalvos || []).forEach(function (codigo) {
+          var item = porCodigo[codigo];
+          var campos = pendentes[codigo];
+          if (item && campos) {
+            item.status = campos.Status;
+            item.formaPagamento = campos.Forma_Pagamento;
+            item.dataPagamento = campos.Data_Pagamento;
+            item.origem = item.status && item.status !== 'Pendente' ? 'Manual' : '—';
+          }
+          delete pendentes[codigo];
+        });
+
+        preencherFiltroSituacao();
+        atualizarCards();
+        aplicarFiltros();
+        atualizarBotaoSalvar();
+
+        if (resp.erros && resp.erros.length) {
+          alert('Salvei ' + (resp.salvos || 0) + '. Estas não deram certo:\n\n'
+            + resp.erros.map(function (e) { return '• ' + e.codigo + ': ' + e.mensagem; }).join('\n'));
+        } else {
+          botaoSalvarTudo.textContent = 'Salvo!';
+          setTimeout(atualizarBotaoSalvar, 2000);
+        }
       })
       .catch(function () {
-        botao.disabled = false;
-        botao.textContent = 'Salvar';
-        alert('Não conseguimos falar com o servidor. Tente novamente.');
+        atualizarBotaoSalvar();
+        alert('Não conseguimos falar com o servidor. Suas alterações continuam na tela — é só tentar salvar de novo.');
       });
   }
+
+  botaoSalvarTudo.addEventListener('click', salvarTudo);
+
+  // Fechar a aba com alteração pendente perderia o trabalho sem aviso nenhum.
+  window.addEventListener('beforeunload', function (evento) {
+    if (!Object.keys(pendentes).length) return;
+    evento.preventDefault();
+    evento.returnValue = '';
+  });
+
+  /**
+   * Cards do topo. "Aguardando" reúne tudo que ainda deve — Pendente e também
+   * Falhou/Expirado/Falha_Checkout, que são tentativas não concluídas. O valor
+   * é somado linha a linha porque o preço da inscrição mudou ao longo do tempo.
+   */
+  function atualizarCards() {
+    var contas = { pagas: 0, aguardando: 0, outras: 0 };
+    var centavos = { pagas: 0, aguardando: 0 };
+    var semCobranca = {};
+
+    todasInscricoes.forEach(function (item) {
+      var grupo = grupoDaSituacao(item.status);
+      contas[grupo]++;
+
+      if (grupo === 'outras') {
+        var situacao = item.status || '—';
+        semCobranca[situacao] = (semCobranca[situacao] || 0) + 1;
+      } else {
+        centavos[grupo] += Number(item.valorCentavos) || 0;
+      }
+    });
+
+    var total = todasInscricoes.length;
+
+    cardTodasNumero.textContent = total;
+
+    cardPagasNumero.textContent = contas.pagas;
+    cardPagasNota.textContent = total ? Math.round((contas.pagas / total) * 100) + '% do total' : '';
+
+    cardAguardandoNumero.textContent = contas.aguardando;
+    cardAguardandoNota.textContent = centavos.aguardando
+      ? formatarReais(centavos.aguardando) + ' a receber'
+      : '';
+
+    cardDinheiroNumero.textContent = formatarReais(centavos.pagas);
+    cardDinheiroNota.textContent = 'de ' + formatarReais(centavos.pagas + centavos.aguardando) + ' previstos';
+
+    // Só aparece quando existe alguma — na maior parte do tempo fica invisível.
+    var trechos = Object.keys(semCobranca).map(function (situacao) {
+      var quantas = semCobranca[situacao];
+      var rotulo = ROTULO_SEM_COBRANCA[situacao];
+      return quantas + ' ' + (rotulo ? rotulo[quantas === 1 ? 0 : 1] : situacao.toLowerCase());
+    });
+    cardsExtra.textContent = trechos.length ? 'Sem cobrança: ' + trechos.join(' · ') + '.' : '';
+    cardsExtra.hidden = !trechos.length;
+
+    cards.hidden = false;
+  }
+
+  function marcarCardAtivo() {
+    var botoes = cards.querySelectorAll('.card-metrica[data-card]');
+    Array.prototype.forEach.call(botoes, function (botao) {
+      var ativo = botao.getAttribute('data-card') === filtroCard;
+      botao.classList.toggle('card-metrica--ativo', ativo);
+      botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    });
+  }
+
+  cards.addEventListener('click', function (evento) {
+    var botao = evento.target.closest('.card-metrica[data-card]');
+    if (!botao) return;
+
+    var alvo = botao.getAttribute('data-card');
+    // "Inscrições" sempre volta pra lista inteira; clicar no card já ativo desliga.
+    filtroCard = (alvo === 'todas' || alvo === filtroCard) ? '' : alvo;
+
+    filtroSituacao.value = '';
+    marcarCardAtivo();
+    aplicarFiltros();
+  });
 
   function baixarFichaPdf(codigo, botao) {
     var textoOriginal = botao.textContent;
@@ -483,6 +703,7 @@
 
     var filtradas = todasInscricoes.filter(function (item) {
       if (situacao && item.status !== situacao) return false;
+      if (filtroCard && grupoDaSituacao(item.status) !== filtroCard) return false;
       if (!termo) return true;
       return CAMPOS_BUSCA.some(function (chave) {
         var valor = item[chave];
@@ -498,7 +719,14 @@
   }
 
   campoBusca.addEventListener('input', aplicarFiltros);
-  filtroSituacao.addEventListener('change', aplicarFiltros);
+
+  // O <select> e os cards são dois caminhos para a mesma coisa: usar um desliga
+  // o outro, senão os dois somados poderiam esconder linhas sem explicação.
+  filtroSituacao.addEventListener('change', function () {
+    filtroCard = '';
+    marcarCardAtivo();
+    aplicarFiltros();
+  });
 
   // Retoma a sessão se esta mesma aba já tinha um token válido guardado.
   token = tokenSalvo();
