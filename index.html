@@ -397,9 +397,13 @@
     apiPost('registrarInscricao', { dados: dados })
       .then(function (resposta) {
         if (resposta.ok) {
-          recado.textContent = 'Tudo certo! Levando você para o pagamento...';
+          /* Não vai mais direto pro PagBank: a pessoa passa pela tela de
+             confirmação, vê o código e decide se paga agora ou depois. Quem vai
+             pagar em dinheiro, ou cuja instituição vai pagar, não precisa passar
+             por uma tela de pagamento que não vai usar. */
+          recado.textContent = 'Tudo certo! Confirmando sua inscrição...';
           recado.className = 'recado ok';
-          window.location.href = resposta.paymentUrl;
+          window.location.href = 'sucesso.html?ref=' + encodeURIComponent(resposta.codigo);
           return;
         }
         if (!resposta.campo || !mostrarErroCampo(resposta.campo, resposta.mensagem)) {
@@ -409,7 +413,11 @@
         liberarBotao();
       })
       .catch(function () {
-        recado.textContent = 'Não conseguimos falar com o servidor. Verifique sua conexão e tente novamente.';
+        /* A conexão pode ter caído *depois* de o servidor gravar a inscrição, e o
+           antigo "tente novamente" levava a pessoa a reenviar e duplicar. Hoje o
+           servidor não duplica mais (reconhece o CPF), mas a mensagem também
+           deixou de empurrar para o reenvio às cegas. */
+        recado.textContent = 'Não conseguimos confirmar agora. Recarregue a página antes de tentar de novo — sua inscrição pode já ter sido registrada.';
         recado.className = 'recado erro';
         liberarBotao();
       });

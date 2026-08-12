@@ -52,6 +52,9 @@
       </div>
       <div class="admin-acoes-topo">
         <input type="search" id="busca" placeholder="Buscar por nome, código, e-mail...">
+        <select id="filtro-situacao" aria-label="Filtrar por situação">
+          <option value="">Todas as situações</option>
+        </select>
         <button type="button" class="botao-mini" id="botao-excel">Exportar Excel</button>
         <button type="button" class="botao-mini botao-mini--sair" id="botao-sair">Sair</button>
       </div>
@@ -90,6 +93,7 @@
   var erroLogin = document.getElementById('erro-login');
   var corpoTabela = document.getElementById('corpo-tabela');
   var campoBusca = document.getElementById('busca');
+  var filtroSituacao = document.getElementById('filtro-situacao');
   var botaoSair = document.getElementById('botao-sair');
   var botaoExcel = document.getElementById('botao-excel');
   var contador = document.getElementById('contador');
@@ -245,8 +249,8 @@
           return;
         }
         todasInscricoes = resp.inscricoes || [];
-        contador.textContent = todasInscricoes.length + ' inscrição(ões)';
-        renderizarTabela(todasInscricoes);
+        preencherFiltroSituacao();
+        aplicarFiltros();
       })
       .catch(function (erro) {
         // Sessão expirada já foi tratada em apiGetAdmin (voltou para o login).
@@ -433,17 +437,57 @@
       });
   }
 
-  campoBusca.addEventListener('input', function () {
+  /**
+   * Monta a lista do filtro a partir das situações que realmente aparecem nas
+   * inscrições — assim ele nunca oferece uma opção que não filtraria nada, e
+   * cobre também as situações automáticas da PagBank quando elas existirem.
+   */
+  function preencherFiltroSituacao() {
+    var escolhaAtual = filtroSituacao.value;
+    var situacoes = [];
+    todasInscricoes.forEach(function (item) {
+      if (item.status && situacoes.indexOf(item.status) === -1) situacoes.push(item.status);
+    });
+    situacoes.sort();
+
+    filtroSituacao.textContent = '';
+    var todas = document.createElement('option');
+    todas.value = '';
+    todas.textContent = 'Todas as situações';
+    filtroSituacao.appendChild(todas);
+
+    situacoes.forEach(function (s) {
+      var option = document.createElement('option');
+      option.value = s;
+      option.textContent = s;
+      if (s === escolhaAtual) option.selected = true;
+      filtroSituacao.appendChild(option);
+    });
+  }
+
+  /** Busca por texto e filtro de situação valem ao mesmo tempo. */
+  function aplicarFiltros() {
     var termo = campoBusca.value.trim().toLowerCase();
-    if (!termo) { renderizarTabela(todasInscricoes); return; }
+    var situacao = filtroSituacao.value;
+
     var filtradas = todasInscricoes.filter(function (item) {
+      if (situacao && item.status !== situacao) return false;
+      if (!termo) return true;
       return CAMPOS_BUSCA.some(function (chave) {
         var valor = item[chave];
         return valor && String(valor).toLowerCase().indexOf(termo) !== -1;
       });
     });
+
+    contador.textContent = filtradas.length === todasInscricoes.length
+      ? todasInscricoes.length + ' inscrição(ões)'
+      : filtradas.length + ' de ' + todasInscricoes.length + ' inscrição(ões)';
+
     renderizarTabela(filtradas);
-  });
+  }
+
+  campoBusca.addEventListener('input', aplicarFiltros);
+  filtroSituacao.addEventListener('change', aplicarFiltros);
 
   // Retoma a sessão se esta mesma aba já tinha um token válido guardado.
   token = tokenSalvo();

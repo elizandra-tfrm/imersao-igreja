@@ -73,6 +73,31 @@
       </div>
     </div>
 
+    <!-- Inscrita, ainda sem pagamento registrado (nunca chegou a abrir o checkout) -->
+    <div class="painel-zona" id="estado-pronta-para-pagar">
+      <div class="painel-icone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+      </div>
+      <h1>Inscrição registrada!</h1>
+      <div class="painel-texto">
+        <p id="mensagem-registrada">Sua vaga está registrada.</p>
+        <p class="ocultavel">Guarde o link desta página: é por ele que você volta aqui quando quiser.</p>
+      </div>
+
+      <div class="painel-dados">
+        <dl class="resumo">
+          <div class="linha"><dt>Código da inscrição</dt><dd id="resumo-codigo-pendente">—</dd></div>
+        </dl>
+      </div>
+
+      <div class="painel-acoes">
+        <button class="botao" type="button" id="botao-pagar-agora">Pagar agora (Pix ou cartão)</button>
+        <p class="aviso-pagamento">Já pagou de outra forma — dinheiro, transferência, ou alguém vai pagar por você? Pode fechar esta página: a coordenação confirma sua inscrição.</p>
+      </div>
+    </div>
+
     <!-- Pagamento recusado -->
     <div class="painel-zona" id="estado-falhou">
       <div class="painel-icone painel-icone--alerta">
@@ -154,7 +179,7 @@
   var codigo = new URLSearchParams(window.location.search).get('ref');
   var tentativas = 0;
   var MAX_TENTATIVAS = 20; // ~60s (3s cada)
-  var ESTADOS = ['estado-carregando', 'estado-pago', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro'];
+  var ESTADOS = ['estado-carregando', 'estado-pago', 'estado-pronta-para-pagar', 'estado-falhou', 'estado-expirado', 'estado-demorando', 'estado-erro'];
 
   function mostrar(id) {
     ESTADOS.forEach(function (elId) {
@@ -185,7 +210,21 @@
       mostrar('estado-expirado');
       return;
     }
-    agendarProxima(); // Pendente / ainda propagando
+    /* Pendente e nunca abriu o checkout = acabou de se inscrever e ainda não
+       clicou em pagar. Não há o que ficar consultando, então mostra a tela com o
+       botão de pagar e para o laço. Repare que ela não afirma "não pago": quem
+       pagou em dinheiro ou por terceiros só ainda não foi marcado pela
+       coordenação, e ver "pendente" assustaria à toa. */
+    if (!resposta.temCheckout) {
+      if (resposta.nome) {
+        document.getElementById('mensagem-registrada').textContent =
+          'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua vaga está registrada.';
+      }
+      document.getElementById('resumo-codigo-pendente').textContent = codigo;
+      mostrar('estado-pronta-para-pagar');
+      return;
+    }
+    agendarProxima(); // Pendente com checkout: foi pagar, aguardando a PagBank confirmar
   }
 
   function verificar() {
@@ -220,6 +259,9 @@
 
   document.getElementById('botao-tentar').addEventListener('click', function () { gerarNovoPagamento(this); });
   document.getElementById('botao-novo-link').addEventListener('click', function () { gerarNovoPagamento(this); });
+  /* Mesma ação dos botões acima: reiniciarPagamento cria o checkout na hora e
+     funciona tanto em inscrição que nunca teve um quanto em uma que expirou. */
+  document.getElementById('botao-pagar-agora').addEventListener('click', function () { gerarNovoPagamento(this); });
   document.getElementById('botao-verificar').addEventListener('click', function () {
     tentativas = 0;
     mostrar('estado-carregando');
