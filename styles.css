@@ -1300,20 +1300,43 @@ body.admin {
 
 .admin-acoes-topo { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-.admin-acoes-topo input[type="search"] {
-  min-width: 220px;
-  padding: 0.6rem 0.85rem;
+/* Busca e filtro compartilham forma e altura: são o mesmo tipo de controle e
+   ficam lado a lado. A altura é explícita porque <input> e <select> calculam a
+   sua de formas diferentes, e sem isso um fica sempre um fio mais alto. */
+.admin-acoes-topo input[type="search"],
+.admin-acoes-topo select {
+  height: 40px;
+  padding: 0 0.85rem;
   border: 1px solid var(--hairline);
   border-radius: 0.6rem;
   font-family: var(--font-body);
   font-size: 0.9rem;
-  background: var(--surface);
+  color: var(--text);
+  background-color: var(--surface);
 }
-.admin-acoes-topo input[type="search"]:focus {
+
+.admin-acoes-topo input[type="search"] { min-width: 220px; }
+
+/* appearance:none tira o visual nativo do sistema (que destoava de tudo); a
+   seta volta como imagem de fundo, no mesmo tom dos textos secundários. */
+.admin-acoes-topo select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.1rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.75 6 6.25 11 1.75' fill='none' stroke='%238C7B72' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 11px 8px;
+}
+
+.admin-acoes-topo input[type="search"]:focus,
+.admin-acoes-topo select:focus {
   outline: none;
   border-color: var(--lavender);
   box-shadow: 0 0 0 3px rgba(123,94,167,0.12);
 }
+.admin-acoes-topo select:hover { border-color: rgba(123,94,167,0.4); }
 
 .botao-mini {
   display: inline-flex;
@@ -1406,13 +1429,16 @@ button.card-metrica:focus-visible {
   color: var(--text-muted);
 }
 
-/* Ressalva, não dado: itálico e menor para não competir com o valor acima. */
+/* Ressalva, não dado. O itálico rebaixado deixava a linha fina demais para ler;
+   agora é texto normal, separado por um fio — a divisão faz o papel que o
+   itálico fazia, sem custar legibilidade. */
 .card-nota--obs {
   min-height: 0;
-  margin-top: 1px;
-  font-size: 0.7rem;
-  font-style: italic;
-  opacity: 0.8;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.72rem;
+  opacity: 1;
 }
 
 .admin-cards-extra {
