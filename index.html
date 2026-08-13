@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=22">
+<link rel="stylesheet" href="styles.css?v=23">
 </head>
 <body>
 
@@ -87,6 +87,7 @@
               <label for="cpf">CPF</label>
               <input type="text" id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required>
               <div class="erro-campo" id="erro-cpf"></div>
+              <div class="campo-nota" id="nota-cpf" role="status" aria-live="polite" hidden></div>
             </div>
 
             <div class="campo">
@@ -322,19 +323,26 @@
   normalizarEmail(document.getElementById('email'));
 
   /* ── Reconhecer quem já se inscreveu, pelo CPF ─────────────────────────
-     Consulta ao sair do campo (2º da ficha): se o CPF já tem inscrição, um
-     aviso oferece ir para a página dela — antes de preencher tudo de novo.
-     Nada é gravado por este caminho, e qualquer falha é silenciosa: a consulta
-     nunca pode impedir uma inscrição. */
+     Assim que o CPF fica completo (11 dígitos), consulta se já existe
+     inscrição — antes de a pessoa preencher a ficha inteira de novo. Enquanto
+     consulta, uma notinha "Verificando..." aparece sob o campo: a resposta do
+     Apps Script leva alguns segundos, e sem o sinal o aviso parecia surgir do
+     nada (ou nunca). Nada é gravado por este caminho, e falha de rede é
+     silenciosa: a consulta nunca pode impedir uma inscrição. */
   (function () {
     var campoCpf = document.getElementById('cpf');
+    var nota = document.getElementById('nota-cpf');
     var modal = document.getElementById('modal-ja-inscrita');
     var mostradorSegundos = document.getElementById('modal-segundos');
     var cronometro = null;
+    var aguardaDigitacao = null;
     var destino = null;
-    /* Um aviso por CPF: quem clicar em "Não sou eu" não pode ser interrompida
-       de novo pelo mesmo número a cada vez que passa pelo campo. */
-    var jaAvisados = {};
+    /* Consultas resolvidas (com resposta) por CPF: quem clicar em "Não sou eu"
+       não pode ser interrompida de novo pelo mesmo número. Só marca DEPOIS da
+       resposta — marcar antes fazia uma consulta que falhasse "queimar" o CPF,
+       e o aviso nunca mais aparecia para aquele número. */
+    var resolvidos = {};
+    var emConsulta = null;
 
     function fecharModal() {
       if (cronometro) { clearInterval(cronometro); cronometro = null; }
@@ -343,7 +351,7 @@
 
     function abrirModal(codigo) {
       destino = 'sucesso.html?ref=' + encodeURIComponent(codigo);
-      var restantes = 5;
+      var restantes = 8;
       mostradorSegundos.textContent = restantes;
       modal.hidden = false;
       cronometro = setInterval(function () {
@@ -353,17 +361,35 @@
       }, 1000);
     }
 
-    campoCpf.addEventListener('blur', function () {
+    function consultarCpf() {
       var digitos = campoCpf.value.replace(/\D/g, '');
-      if (digitos.length !== 11 || jaAvisados[digitos]) return;
-      jaAvisados[digitos] = true;
+      if (digitos.length !== 11 || resolvidos[digitos] || emConsulta === digitos) return;
+      emConsulta = digitos;
+
+      nota.textContent = 'Verificando...';
+      nota.hidden = false;
 
       apiGet('consultarInscricaoPorCpf', { cpf: digitos })
         .then(function (resp) {
+          resolvidos[digitos] = true;
+          nota.hidden = true;
           if (resp && resp.encontrada && resp.codigo) abrirModal(resp.codigo);
         })
-        .catch(function () { /* sem rede, sem aviso — o formulário segue normal */ });
+        .catch(function () {
+          /* Sem rede, sem aviso — e sem marcar como resolvido, para tentar de
+             novo no próximo blur. O formulário segue normal. */
+          nota.hidden = true;
+        })
+        .then(function () { emConsulta = null; });
+    }
+
+    /* Dispara enquanto digita (meio segundo depois da última tecla) e também
+       ao sair do campo — o que vier primeiro. */
+    campoCpf.addEventListener('input', function () {
+      if (aguardaDigitacao) clearTimeout(aguardaDigitacao);
+      aguardaDigitacao = setTimeout(consultarCpf, 500);
     });
+    campoCpf.addEventListener('blur', consultarCpf);
 
     document.getElementById('modal-ir-agora').addEventListener('click', function () {
       fecharModal();
