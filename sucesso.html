@@ -36,12 +36,14 @@
 
   <main class="painel vidro entra entra--desfocado entra--2">
 
-    <!-- Aguardando confirmação -->
+    <!-- Aguardando — o texto padrão é genérico e vale para qualquer chegada;
+         só quem volta do PagBank (origem=pagbank) vê "Confirmando seu
+         pagamento", que é quando a frase é verdadeira. -->
     <div class="painel-zona ativa" id="estado-carregando">
       <div class="rodela"></div>
-      <h1 id="titulo-carregando">Confirmando seu pagamento</h1>
+      <h1 id="titulo-carregando">Carregando sua inscrição</h1>
       <div class="painel-texto">
-        <p id="texto-carregando">Isso pode levar alguns segundos. Não feche esta página.</p>
+        <p id="texto-carregando">Só um instante.</p>
       </div>
     </div>
 
@@ -228,6 +230,7 @@
      origem=cadastro). Sem essa distinção, quem só se inscreveu via "Confirmando
      seu pagamento", que não tem nada a ver com o que ela fez. */
   var veioDoCadastro = params.get('origem') === 'cadastro';
+  var veioDoPagBank = params.get('origem') === 'pagbank';
   var jaEstavaInscrita = params.get('ja') === '1';
   var tentativas = 0;
   var MAX_TENTATIVAS = 20; // ~60s (3s cada)
@@ -306,14 +309,15 @@
     /* Falha_Checkout entra aqui junto: é um status legado (nada mais o define),
        mas linhas antigas ainda o têm e, sem isso, ficariam consultando em laço
        para sempre em vez de oferecer o botão de pagar. */
-    /* Quem acabou de reenviar a ficha e já tinha um pagamento em aberto não pode
-       cair no laço de consulta: ela veria "Carregando sua inscrição" por um
-       minuto e depois "está demorando", sem nunca saber que a inscrição foi
-       reconhecida. Não há o que esperar aqui — ela não veio do PagBank, veio do
-       formulário. O botão de pagar devolve ao mesmo link que já estava vivo. */
-    var reenvioComPagamentoEmAberto = veioDoCadastro && jaEstavaInscrita && resposta.status === 'Pendente';
+    /* Pagamento em aberto (Pendente com checkout): o laço de "Confirmando..."
+       só faz sentido para quem ACABOU de voltar do PagBank — aí sim há uma
+       confirmação a caminho. Quem chega por qualquer outra porta (reenviou a
+       ficha, abriu o link salvo, foi reconhecida pelo CPF) não tem o que
+       esperar: vê "Inscrição registrada!" com o botão, que devolve ao mesmo
+       link que já estava vivo. */
+    var pagamentoEmAbertoSemVoltaDoPagBank = !veioDoPagBank && resposta.status === 'Pendente';
 
-    if (!resposta.temCheckout || resposta.status === 'Falha_Checkout' || reenvioComPagamentoEmAberto) {
+    if (!resposta.temCheckout || resposta.status === 'Falha_Checkout' || pagamentoEmAbertoSemVoltaDoPagBank) {
       if (resposta.nome) {
         document.getElementById('mensagem-registrada').textContent =
           'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua vaga está registrada.';
@@ -386,9 +390,9 @@
     verificar();
   });
 
-  if (veioDoCadastro) {
-    document.getElementById('titulo-carregando').textContent = 'Carregando sua inscrição';
-    document.getElementById('texto-carregando').textContent = 'Só um instante.';
+  if (veioDoPagBank) {
+    document.getElementById('titulo-carregando').textContent = 'Confirmando seu pagamento';
+    document.getElementById('texto-carregando').textContent = 'Isso pode levar alguns segundos. Não feche esta página.';
   }
 
   if (!codigo) { mostrar('estado-erro'); } else { verificar(); }

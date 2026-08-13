@@ -771,6 +771,19 @@
    * checkout novo se o atual venceu ou o valor mudou.
    */
   function cobrarPorWhatsApp(item, botao) {
+    /* Pergunta antes: nem todo contato com quem não pagou é cobrança. confirm()
+       é síncrono, então ainda estamos "dentro do clique" — a janela aberta em
+       seguida não é tratada como pop-up. */
+    var querCobrar = confirm(
+      'Esta pessoa ainda não pagou.\n\n' +
+      'OK — abrir o WhatsApp com a mensagem de cobrança e o link de pagamento\n' +
+      'Cancelar — abrir só a conversa, sem mensagem'
+    );
+    if (!querCobrar) {
+      window.open(urlWhatsApp(item.telefone, ''), '_blank', 'noopener');
+      return;
+    }
+
     var janela = window.open('', '_blank');
     botao.disabled = true;
     botao.textContent = 'Gerando...';
