@@ -231,9 +231,10 @@
 
   /* Espelha origemDoPagamento_ (Config.gs) para a linha recém-salva, sem esperar
      uma recarga. Aqui não há Charge_Id à vista, mas quem tem cobrança confirmada
-     está travado e nem chega a ser salvo por esta via. */
-  function origemDaSituacao(status) {
-    if (!status || status === 'Pendente') return '—';
+     está travado e nem chega a ser salvo por esta via. Pendente com link em
+     aberto conta como PagBank — há uma cobrança viva esperando lá. */
+  function origemDaSituacao(status, temCheckout) {
+    if (!status || status === 'Pendente') return temCheckout ? 'PagBank' : '—';
     return STATUS_MANUAIS.indexOf(status) === -1 ? 'PagBank' : 'Manual';
   }
 
@@ -528,7 +529,11 @@
       var tdOrigem = document.createElement('td');
       tdOrigem.textContent = item.origem || '—';
       if (item.origem === 'PagBank') {
-        tdOrigem.title = 'Pagamento confirmado pela PagBank.';
+        tdOrigem.title = item.status === 'Pago'
+          ? 'Pagamento confirmado pela PagBank.'
+          : (item.status === 'Pendente'
+            ? 'Link de pagamento em aberto na PagBank, aguardando o pagamento.'
+            : 'Situação definida pela PagBank.');
       } else if (item.origem === 'Manual') {
         tdOrigem.title = 'Situação definida pela coordenação, sem passar pela PagBank.';
       }
@@ -669,7 +674,7 @@
             item.status = campos.Status;
             item.formaPagamento = campos.Forma_Pagamento;
             item.dataPagamento = campos.Data_Pagamento;
-            item.origem = origemDaSituacao(item.status);
+            item.origem = origemDaSituacao(item.status, item.temCheckout);
           }
           delete pendentes[codigo];
         });
