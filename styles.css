@@ -1455,25 +1455,16 @@ button.card-metrica:focus-visible {
 
 /* ── Tabela ──────────────────────────────────────────────── */
 
-/* Sem rolagem interna: a tabela cresce e quem rola é a PÁGINA — a barra fica
-   na beirada do navegador, fora da moldura, onde nenhum desenho compete com
-   ela. O cabeçalho continua visível porque o thead é sticky: sem um ancestral
-   rolável, ele gruda no topo da janela. (As tentativas de estilizar uma barra
-   interna sempre brigavam com a moldura arredondada — o erro era a barra
-   existir ali, não a cor dela.) */
+/* Altura contida (decisão do usuário: a página não deve crescer com a lista),
+   com a barra domesticada: fina, lavanda, começando ABAIXO do cabeçalho fixo
+   (margem do trilho = altura dele) e com respiro da borda arredondada. */
 .admin-tabela-wrap {
   background: var(--surface);
   border: 1px solid var(--hairline);
   border-radius: 0.85rem;
-  overflow: visible;
+  overflow: auto;
+  max-height: 72vh;
   box-shadow: 0 1px 2px rgba(61,44,44,0.04), 0 8px 24px rgba(61,44,44,0.05);
-}
-
-/* Em tela estreita as 8 colunas não cabem: volta a rolagem interna só no
-   eixo horizontal (o vertical segue com a página). O cabeçalho deixa de
-   grudar nesse modo — limitação do sticky dentro de contêiner rolável. */
-@media (max-width: 900px) {
-  .admin-tabela-wrap { overflow-x: auto; }
 }
 
 /* Sem min-width: os dois painéis têm poucas colunas (código, nome, situação,
@@ -1695,9 +1686,28 @@ table.admin-tabela {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* A única barra que ainda pode aparecer no wrap é a horizontal do modo
-   estreito — discreta e no tom do tema. */
-.admin-tabela-wrap { scrollbar-width: thin; scrollbar-color: rgba(123,94,167,0.3) transparent; }
+/* Barra do wrap. As propriedades padrão valem SÓ onde ::-webkit-scrollbar não
+   existe (Firefox): no Chrome, a presença delas descartaria todo o desenho
+   detalhado abaixo. */
+@supports not selector(::-webkit-scrollbar) {
+  .admin-tabela-wrap { scrollbar-width: thin; scrollbar-color: rgba(123,94,167,0.35) transparent; }
+}
+.admin-tabela-wrap::-webkit-scrollbar { width: 11px; height: 11px; }
+.admin-tabela-wrap::-webkit-scrollbar-track {
+  background: transparent;
+  /* 41px = altura do cabeçalho fixo: o trilho começa na grade, não sobre ele.
+     Os 10px de baixo afastam a pílula do canto arredondado. */
+  margin: 41px 10px 10px;
+}
+.admin-tabela-wrap::-webkit-scrollbar-thumb {
+  background: rgba(123,94,167,0.4);
+  border-radius: 999px;
+  /* Pílula de 5px com 3px de respiro de cada lado — presente sem pesar. */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.admin-tabela-wrap::-webkit-scrollbar-thumb:hover { background-color: rgba(123,94,167,0.6); }
+.admin-tabela-wrap::-webkit-scrollbar-corner { background: transparent; }
 
 /* X de fechar dos modais de aviso/confirmação. O modal do CPF (redirecionamento)
    não o usa de propósito: lá as duas saídas já são os próprios botões. */
