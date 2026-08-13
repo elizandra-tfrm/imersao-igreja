@@ -110,6 +110,7 @@
       </div>
       <h1>Inscrição confirmada!</h1>
       <div class="painel-texto">
+        <p id="aviso-ja-inscrita-isento" class="aviso-reenvio" hidden>Você já estava inscrita.</p>
         <p id="mensagem-isento">Sua participação está garantida.</p>
         <p class="ocultavel">Não há pagamento a fazer — a coordenação já cuidou disso.</p>
         <p class="destaque">Nos vemos no dia 05 de setembro de 2026!</p>
@@ -130,7 +131,8 @@
       </div>
       <h1>Esta inscrição não está mais ativa</h1>
       <div class="painel-texto">
-        <p>Consta como desistência aqui. Se isso não estiver certo, fale com a coordenação que a gente resolve.</p>
+        <p id="aviso-ja-inscrita-desistiu" class="aviso-reenvio" hidden>Você já estava inscrita.</p>
+        <p>Consta como encerrada aqui. Se isso não estiver certo, fale com a coordenação que a gente resolve.</p>
       </div>
       <div class="painel-acoes">
         <a class="botao botao--suave" href="https://wa.me/5567996083444" target="_blank" rel="noopener">Falar no WhatsApp</a>
@@ -240,6 +242,14 @@
   var NOME_FORMA = { PIX: 'Pix', CREDIT_CARD: 'Cartão de crédito', BOLETO: 'Boleto' };
 
   function aoReceber(resposta) {
+    /* Sem este ramo, "NaoEncontrado" não casava com nada e escorregava até o
+       teste final (!resposta.temCheckout), que é verdadeiro para undefined —
+       então um ref errado ou antigo exibia "Inscrição registrada!" com botão de
+       pagar, para uma inscrição que não existe. */
+    if (resposta.status === 'NaoEncontrado') {
+      mostrar('estado-erro');
+      return;
+    }
     if (resposta.status === 'Pago') {
       if (resposta.nome) {
         document.getElementById('mensagem-pago').textContent =
@@ -263,11 +273,17 @@
         document.getElementById('mensagem-isento').textContent =
           'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua participação está garantida.';
       }
+      if (jaEstavaInscrita) document.getElementById('aviso-ja-inscrita-isento').hidden = false;
       document.getElementById('resumo-codigo-isento').textContent = codigo;
       mostrar('estado-isento');
       return;
     }
-    if (resposta.status === 'Desistiu') {
+    /* Cancelado vem junto com Desistiu, e não com "link expirado" como antes:
+       são os dois casos de inscrição encerrada por decisão da coordenação. Na
+       tela de link expirado ela encontrava o botão "gerar novo link", que a
+       devolvia para Pendente — desfazendo sozinha o cancelamento. */
+    if (resposta.status === 'Desistiu' || resposta.status === 'Cancelado') {
+      if (jaEstavaInscrita) document.getElementById('aviso-ja-inscrita-desistiu').hidden = false;
       mostrar('estado-desistiu');
       return;
     }
@@ -277,7 +293,7 @@
       mostrar('estado-falhou');
       return;
     }
-    if (resposta.status === 'Expirado' || resposta.status === 'Cancelado') {
+    if (resposta.status === 'Expirado') {
       if (jaEstavaInscrita) document.getElementById('aviso-ja-inscrita-expirado').hidden = false;
       mostrar('estado-expirado');
       return;
@@ -290,7 +306,14 @@
     /* Falha_Checkout entra aqui junto: é um status legado (nada mais o define),
        mas linhas antigas ainda o têm e, sem isso, ficariam consultando em laço
        para sempre em vez de oferecer o botão de pagar. */
-    if (!resposta.temCheckout || resposta.status === 'Falha_Checkout') {
+    /* Quem acabou de reenviar a ficha e já tinha um pagamento em aberto não pode
+       cair no laço de consulta: ela veria "Carregando sua inscrição" por um
+       minuto e depois "está demorando", sem nunca saber que a inscrição foi
+       reconhecida. Não há o que esperar aqui — ela não veio do PagBank, veio do
+       formulário. O botão de pagar devolve ao mesmo link que já estava vivo. */
+    var reenvioComPagamentoEmAberto = veioDoCadastro && jaEstavaInscrita && resposta.status === 'Pendente';
+
+    if (!resposta.temCheckout || resposta.status === 'Falha_Checkout' || reenvioComPagamentoEmAberto) {
       if (resposta.nome) {
         document.getElementById('mensagem-registrada').textContent =
           'Tudo certo, ' + resposta.nome.split(' ')[0] + '! Sua vaga está registrada.';
