@@ -792,8 +792,13 @@
     });
   }
 
+  /* A mensagem vai pela ÁREA DE TRANSFERÊNCIA, não embutida no link do wa.me.
+     Motivo: quando o wa.me abre o aplicativo do WhatsApp no Windows, o texto da
+     URL passa por uma conversão de caracteres antiga (CP-1252) que preserva
+     acentos mas transforma TODO emoji em "�" — aconteceu numa cobrança real. O
+     clipboard não sofre essa conversão, então a mensagem chega inteira; a
+     coordenação só precisa colar (Ctrl+V) na conversa que abre. */
   function enviarCobranca(item, botao) {
-    var janela = window.open('', '_blank');
     botao.disabled = true;
     botao.textContent = 'Gerando...';
 
@@ -804,22 +809,43 @@
 
     apiPost('adminGerarLinkPagamento', { token: token, codigo: item.codigo })
       .then(function (resp) {
+        restaurar();
         if (resp && resp.sessaoInvalida) {
-          if (janela) janela.close();
           mostrarLogin('Sessão expirada. Faça login novamente.');
           return;
         }
-        restaurar();
         if (!resp.ok || !resp.paymentUrl) {
-          if (janela) janela.close();
           mostrarAviso(resp.mensagem || 'Não foi possível gerar o link de pagamento.');
           return;
         }
-        var url = urlWhatsApp(item.telefone, mensagemCobranca(item.nome, resp.paymentUrl));
-        if (janela) { janela.location.href = url; } else { window.open(url, '_blank', 'noopener'); }
+
+        var texto = mensagemCobranca(item.nome, resp.paymentUrl);
+
+        /* O passo extra do modal não é burocracia: copiar para o clipboard e
+           abrir janela exigem um clique "fresco" — o clique original já se
+           gastou na espera da geração do link. */
+        mostrarConfirmacao({
+          titulo: 'Mensagem pronta',
+          mensagem: 'O link de pagamento foi gerado. Vou copiar a mensagem completa — na conversa que abrir, é só colar (Ctrl+V) e enviar.',
+          textoConfirmar: 'Copiar e abrir o WhatsApp',
+          textoCancelar: 'Agora não',
+          aoConfirmar: function () {
+            var abrirConversa = function () {
+              window.open(urlWhatsApp(item.telefone, ''), '_blank', 'noopener');
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(texto).then(abrirConversa, function () {
+                /* Clipboard recusou (permissão): volta ao texto pela URL — pode
+                   perder os emojis no aplicativo, mas a cobrança chega. */
+                window.open(urlWhatsApp(item.telefone, texto), '_blank', 'noopener');
+              });
+            } else {
+              window.open(urlWhatsApp(item.telefone, texto), '_blank', 'noopener');
+            }
+          }
+        });
       })
       .catch(function () {
-        if (janela) janela.close();
         restaurar();
         mostrarAviso('Não conseguimos falar com o servidor. Tente novamente.');
       });
