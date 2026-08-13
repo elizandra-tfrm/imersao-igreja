@@ -1676,21 +1676,33 @@ table.admin-tabela {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Barra de rolagem da tabela: fina, sem trilho, no tom do tema — a nativa
-   desenhava uma coluna cinza colada na borda, cortando o contorno arredondado.
-   Navegadores novos usam as propriedades padrão; o bloco webkit cobre os
-   antigos (quando as padrão existem, o navegador ignora o webkit sozinho). */
-.admin-tabela-wrap {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(123,94,167,0.3) transparent;
+/* Barra de rolagem da tabela: pílula fina no tom do tema, correndo SÓ ao lado
+   das linhas — a margem superior do trilho é a altura do cabeçalho fixo, então
+   a barra "começa a partir da grade", como deve.
+
+   As propriedades padrão (scrollbar-width/color) ficam RESTRITAS a quem não
+   entende ::-webkit-scrollbar (Firefox): no Chrome, a presença delas faz o
+   navegador ignorar todo o estilo detalhado abaixo — foi por isso que a
+   primeira versão saiu como uma coluna cinza crua colada na borda. */
+@supports not selector(::-webkit-scrollbar) {
+  .admin-tabela-wrap {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(123,94,167,0.3) transparent;
+  }
 }
-.admin-tabela-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
-.admin-tabela-wrap::-webkit-scrollbar-track { background: transparent; margin: 14px; }
+.admin-tabela-wrap::-webkit-scrollbar { width: 13px; height: 13px; }
+.admin-tabela-wrap::-webkit-scrollbar-track {
+  background: transparent;
+  /* 41px = altura do cabeçalho (10px de padding em cima e embaixo + a linha de
+     texto) — mantém o trilho abaixo dele. Os 8px de baixo afastam do canto. */
+  margin: 41px 8px 8px;
+}
 .admin-tabela-wrap::-webkit-scrollbar-thumb {
-  background: rgba(123,94,167,0.3);
+  background: rgba(123,94,167,0.35);
   border-radius: 999px;
-  border: 3px solid transparent;
+  /* A borda transparente é o respiro: afasta a pílula da borda da moldura. */
+  border: 4px solid transparent;
   background-clip: padding-box;
 }
-.admin-tabela-wrap::-webkit-scrollbar-thumb:hover { background-color: rgba(123,94,167,0.5); }
+.admin-tabela-wrap::-webkit-scrollbar-thumb:hover { background-color: rgba(123,94,167,0.55); }
 .admin-tabela-wrap::-webkit-scrollbar-corner { background: transparent; }
