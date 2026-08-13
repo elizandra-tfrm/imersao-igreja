@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=18">
+<link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body>
 
@@ -80,6 +80,15 @@
               <div class="erro-campo" id="erro-nome"></div>
             </div>
 
+            <!-- O CPF vem logo no começo de propósito: é por ele que o sistema
+                 reconhece quem já se inscreveu — antes de a pessoa preencher a
+                 ficha inteira de novo. -->
+            <div class="campo">
+              <label for="cpf">CPF</label>
+              <input type="text" id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required>
+              <div class="erro-campo" id="erro-cpf"></div>
+            </div>
+
             <div class="campo">
               <label for="apelido">Como você deseja ser chamada <span class="opcional">(opcional)</span></label>
               <input type="text" id="apelido" name="apelido" autocomplete="nickname">
@@ -140,17 +149,10 @@
               </div>
             </div>
 
-            <div class="dupla">
-              <div class="campo">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com" required>
-                <div class="erro-campo" id="erro-email"></div>
-              </div>
-              <div class="campo">
-                <label for="cpf">CPF</label>
-                <input type="text" id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required>
-                <div class="erro-campo" id="erro-cpf"></div>
-              </div>
+            <div class="campo">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com" required>
+              <div class="erro-campo" id="erro-email"></div>
             </div>
           </div>
         </section>
@@ -282,6 +284,19 @@
 
 </div>
 
+<!-- ── Aviso: este CPF já tem inscrição ─────────────────────── -->
+<div class="modal-fundo" id="modal-ja-inscrita" hidden>
+  <div class="vidro modal-caixa" role="alertdialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <h2 id="modal-titulo">Você já tem uma inscrição</h2>
+    <p>Encontramos uma inscrição com este CPF. Vamos te levar para a sua página.</p>
+    <p class="modal-contagem">Redirecionando em <strong id="modal-segundos">5</strong>...</p>
+    <div class="modal-acoes">
+      <button type="button" class="botao" id="modal-ir-agora">Ir agora</button>
+      <button type="button" class="botao-mini" id="modal-ficar">Não sou eu / corrigir meus dados</button>
+    </div>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script src="api.js?v=2"></script>
 <script src="mascaras.js?v=2"></script>
@@ -305,6 +320,57 @@
   apenasDigitos(document.getElementById('idade'));
   apenasDigitos(document.getElementById('quantosFilhos'));
   normalizarEmail(document.getElementById('email'));
+
+  /* ── Reconhecer quem já se inscreveu, pelo CPF ─────────────────────────
+     Consulta ao sair do campo (2º da ficha): se o CPF já tem inscrição, um
+     aviso oferece ir para a página dela — antes de preencher tudo de novo.
+     Nada é gravado por este caminho, e qualquer falha é silenciosa: a consulta
+     nunca pode impedir uma inscrição. */
+  (function () {
+    var campoCpf = document.getElementById('cpf');
+    var modal = document.getElementById('modal-ja-inscrita');
+    var mostradorSegundos = document.getElementById('modal-segundos');
+    var cronometro = null;
+    var destino = null;
+    /* Um aviso por CPF: quem clicar em "Não sou eu" não pode ser interrompida
+       de novo pelo mesmo número a cada vez que passa pelo campo. */
+    var jaAvisados = {};
+
+    function fecharModal() {
+      if (cronometro) { clearInterval(cronometro); cronometro = null; }
+      modal.hidden = true;
+    }
+
+    function abrirModal(codigo) {
+      destino = 'sucesso.html?ref=' + encodeURIComponent(codigo);
+      var restantes = 5;
+      mostradorSegundos.textContent = restantes;
+      modal.hidden = false;
+      cronometro = setInterval(function () {
+        restantes--;
+        if (restantes <= 0) { fecharModal(); window.location.href = destino; return; }
+        mostradorSegundos.textContent = restantes;
+      }, 1000);
+    }
+
+    campoCpf.addEventListener('blur', function () {
+      var digitos = campoCpf.value.replace(/\D/g, '');
+      if (digitos.length !== 11 || jaAvisados[digitos]) return;
+      jaAvisados[digitos] = true;
+
+      apiGet('consultarInscricaoPorCpf', { cpf: digitos })
+        .then(function (resp) {
+          if (resp && resp.encontrada && resp.codigo) abrirModal(resp.codigo);
+        })
+        .catch(function () { /* sem rede, sem aviso — o formulário segue normal */ });
+    });
+
+    document.getElementById('modal-ir-agora').addEventListener('click', function () {
+      fecharModal();
+      window.location.href = destino;
+    });
+    document.getElementById('modal-ficar').addEventListener('click', fecharModal);
+  })();
 
   /* Nome do evento e valor vêm do backend, para nunca divergirem da planilha */
   apiGet('config').then(function (resp) {

@@ -1554,6 +1554,13 @@ table.admin-tabela {
 }
 .admin-tabela tbody tr.linha-alterada td:not(:first-child) { box-shadow: none; }
 
+/* Verde do WhatsApp, para o botão dizer de longe aonde leva. */
+.botao-zap {
+  color: #1B7A57;
+  border-color: rgba(27,122,87,0.4);
+}
+.botao-zap:hover:not(:disabled) { background: rgba(27,122,87,0.08); border-color: #1B7A57; }
+
 /* ── Rodapé da tabela: salvar tudo de uma vez ────────────── */
 
 .admin-rodape-tabela {
@@ -1597,4 +1604,46 @@ table.admin-tabela {
   .admin-login { margin-top: 4vh; }
   .admin-tabela-wrap { max-height: 68vh; }
   .admin-rodape-tabela { justify-content: space-between; }
+}
+
+/* ── Modal "você já tem uma inscrição" (formulário) ──────── */
+
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(61,44,44,0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.modal-fundo[hidden] { display: none; }
+
+.modal-caixa {
+  max-width: 420px;
+  width: 100%;
+  padding: 28px 26px;
+  text-align: center;
+}
+.modal-caixa h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 500;
+  color: var(--purple-deep);
+  margin-bottom: 10px;
+}
+.modal-caixa p { font-size: 0.92rem; margin-bottom: 8px; }
+
+.modal-contagem { color: var(--text-muted); font-size: 0.85rem !important; }
+.modal-contagem strong { color: var(--lavender); }
+
+.modal-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  align-items: center;
 }

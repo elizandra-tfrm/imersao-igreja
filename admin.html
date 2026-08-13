@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body class="admin">
 
@@ -99,6 +99,7 @@
             <th>Forma</th>
             <th>Data pgto.</th>
             <th>Origem</th>
+            <th>Contato</th>
             <th>Ficha</th>
           </tr>
         </thead>
@@ -166,7 +167,7 @@
      campos editáveis, montados um a um em renderizarTabela. O dado completo
      continua disponível pelo Excel e pelo PDF da ficha. */
   var COLUNAS_TEXTO = ['codigo', 'nome'];
-  var TOTAL_COLUNAS = 7; // as 2 de texto + situação, forma, data, origem, ficha
+  var TOTAL_COLUNAS = 8; // as 2 de texto + situação, forma, data, origem, contato, ficha
 
   /* Campos usados na busca — bem mais amplos que as colunas exibidas, pra ainda
      dar pra achar alguém pelo telefone, e-mail, CPF, igreja, respostas, etc. */
@@ -193,6 +194,34 @@
      no valor previsto. Todo o resto (Pendente, e também Falhou/Expirado/
      Falha_Checkout, que são tentativas que não se concluíram) ainda deve. */
   var STATUS_SEM_COBRANCA = ['Isento', 'Desistiu', 'Cancelado'];
+
+  /* Espelha STATUS_PAGAVEIS do servidor: só nestas situações o botão de contato
+     gera link de pagamento — nas demais ele abre a conversa sem texto pronto. */
+  var STATUS_PAGAVEIS = ['Pendente', 'Falhou', 'Expirado', 'Falha_Checkout'];
+
+  /* Mensagem de cobrança enviada pelo WhatsApp (texto definido pela coordenação). */
+  function mensagemCobranca(nome, link) {
+    var primeiroNome = String(nome || '').trim().split(/\s+/)[0] || 'tudo bem';
+    return '🌷 IMERSÃO MULHERES RENOVADAS PARA TRANSFORMAR\n\n' +
+      'Olá ' + primeiroNome + '!\nTudo bem? 💜\n\n' +
+      'Identificamos que sua inscrição para a Imersão Mulheres Renovadas para Transformar foi realizada com sucesso, porém ainda não identificamos o pagamento.\n\n' +
+      'Para facilitar a conclusão da sua inscrição, disponibilizamos um novo link de pagamento:\n\n' +
+      '🔗 ' + link + '\n\n' +
+      '✨ Será um dia especial de renovação, propósito e transformação!\n\n' +
+      '📅 05 de setembro de 2026\n' +
+      '⏰ Das 8h às 19h\n' +
+      '📍 Igreja Presbiteriana de Costa Rica\n\n' +
+      'Em caso de dúvidas, estamos à disposição.\n\n' +
+      '💜 Será uma alegria ter você conosco!';
+  }
+
+  /* Telefone da planilha (vem como número, sem o 55) -> URL do WhatsApp. */
+  function urlWhatsApp(telefone, texto) {
+    var digitos = String(telefone == null ? '' : telefone).replace(/\D/g, '');
+    if (!digitos) return null;
+    if (digitos.length === 10 || digitos.length === 11) digitos = '55' + digitos;
+    return 'https://wa.me/' + digitos + (texto ? '?text=' + encodeURIComponent(texto) : '');
+  }
 
   var ROTULO_SEM_COBRANCA = {
     Isento: ['isenta', 'isentas'],
@@ -493,6 +522,26 @@
       }
       tr.appendChild(tdOrigem);
 
+      var tdContato = document.createElement('td');
+      var botaoZap = document.createElement('button');
+      botaoZap.type = 'button';
+      botaoZap.className = 'botao-mini botao-zap';
+      botaoZap.textContent = 'WhatsApp';
+      if (!String(item.telefone == null ? '' : item.telefone).replace(/\D/g, '')) {
+        botaoZap.disabled = true;
+        botaoZap.title = 'Inscrição sem telefone.';
+      } else if (STATUS_PAGAVEIS.indexOf(item.status) !== -1) {
+        botaoZap.title = 'Abre o WhatsApp com a mensagem de cobrança e o link de pagamento.';
+        botaoZap.addEventListener('click', function () { cobrarPorWhatsApp(item, botaoZap); });
+      } else {
+        botaoZap.title = 'Abre a conversa no WhatsApp.';
+        botaoZap.addEventListener('click', function () {
+          window.open(urlWhatsApp(item.telefone, ''), '_blank', 'noopener');
+        });
+      }
+      tdContato.appendChild(botaoZap);
+      tr.appendChild(tdContato);
+
       var tdFicha = document.createElement('td');
       var botaoPdf = document.createElement('button');
       botaoPdf.type = 'button';
@@ -711,6 +760,48 @@
     marcarCardAtivo();
     aplicarFiltros();
   });
+
+  /**
+   * Gera (ou reaproveita) o link de pagamento e abre o WhatsApp com a mensagem
+   * de cobrança pronta. A janela é aberta VAZIA no clique, e recebe o endereço
+   * quando o link chega: window.open depois de uma resposta assíncrona é
+   * bloqueado como pop-up pela maioria dos navegadores.
+   *
+   * Clicar duas vezes na mesma pessoa envia o MESMO link: o servidor só cria um
+   * checkout novo se o atual venceu ou o valor mudou.
+   */
+  function cobrarPorWhatsApp(item, botao) {
+    var janela = window.open('', '_blank');
+    botao.disabled = true;
+    botao.textContent = 'Gerando...';
+
+    var restaurar = function () {
+      botao.disabled = false;
+      botao.textContent = 'WhatsApp';
+    };
+
+    apiPost('adminGerarLinkPagamento', { token: token, codigo: item.codigo })
+      .then(function (resp) {
+        if (resp && resp.sessaoInvalida) {
+          if (janela) janela.close();
+          mostrarLogin('Sessão expirada. Faça login novamente.');
+          return;
+        }
+        restaurar();
+        if (!resp.ok || !resp.paymentUrl) {
+          if (janela) janela.close();
+          alert(resp.mensagem || 'Não foi possível gerar o link de pagamento.');
+          return;
+        }
+        var url = urlWhatsApp(item.telefone, mensagemCobranca(item.nome, resp.paymentUrl));
+        if (janela) { janela.location.href = url; } else { window.open(url, '_blank', 'noopener'); }
+      })
+      .catch(function () {
+        if (janela) janela.close();
+        restaurar();
+        alert('Não conseguimos falar com o servidor. Tente novamente.');
+      });
+  }
 
   function baixarFichaPdf(codigo, botao) {
     var textoOriginal = botao.textContent;
