@@ -1455,15 +1455,20 @@ button.card-metrica:focus-visible {
 
 /* ── Tabela ──────────────────────────────────────────────── */
 
-/* Altura contida (decisão do usuário: a página não deve crescer com a lista),
-   com a barra domesticada: fina, lavanda, começando ABAIXO do cabeçalho fixo
-   (margem do trilho = altura dele) e com respiro da borda arredondada. */
+/* Altura contida (decisão do usuário: ~10 linhas à vista, a página não cresce
+   com a lista), com a barra domesticada: fina, lavanda, começando ABAIXO do
+   cabeçalho fixo e com respiro da borda arredondada.
+
+   O fundo em degradê de dois tons não é decoração: os primeiros 41px (altura
+   do cabeçalho) são roxos para a CALHA da barra — a frestinha à direita da
+   coluna Ficha, que o cabeçalho não cobre — ficar roxa também. O fundo do
+   contêiner não rola com o conteúdo, então a faixa fica sempre alinhada. */
 .admin-tabela-wrap {
-  background: var(--surface);
+  background: linear-gradient(var(--purple-deep) 41px, var(--surface) 41px);
   border: 1px solid var(--hairline);
   border-radius: 0.85rem;
   overflow: auto;
-  max-height: 72vh;
+  max-height: 35.5rem; /* cabeçalho + ~10 linhas */
   box-shadow: 0 1px 2px rgba(61,44,44,0.04), 0 8px 24px rgba(61,44,44,0.05);
 }
 
