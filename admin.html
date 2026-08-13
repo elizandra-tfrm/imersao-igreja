@@ -200,6 +200,14 @@
     Cancelado: ['cancelada', 'canceladas']
   };
 
+  /* Espelha origemDoPagamento_ (Config.gs) para a linha recém-salva, sem esperar
+     uma recarga. Aqui não há Charge_Id à vista, mas quem tem cobrança confirmada
+     está travado e nem chega a ser salvo por esta via. */
+  function origemDaSituacao(status) {
+    if (!status || status === 'Pendente') return '—';
+    return STATUS_MANUAIS.indexOf(status) === -1 ? 'PagBank' : 'Manual';
+  }
+
   function grupoDaSituacao(status) {
     if (status === 'Pago') return 'pagas';
     if (STATUS_SEM_COBRANCA.indexOf(status) !== -1) return 'outras';
@@ -600,7 +608,7 @@
             item.status = campos.Status;
             item.formaPagamento = campos.Forma_Pagamento;
             item.dataPagamento = campos.Data_Pagamento;
-            item.origem = item.status && item.status !== 'Pendente' ? 'Manual' : '—';
+            item.origem = origemDaSituacao(item.status);
           }
           delete pendentes[codigo];
         });
