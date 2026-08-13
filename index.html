@@ -283,7 +283,7 @@
 </div>
 
 <script src="config.js"></script>
-<script src="api.js"></script>
+<script src="api.js?v=2"></script>
 <script src="mascaras.js?v=2"></script>
 <script src="animacoes.js?v=2"></script>
 <script>
@@ -394,7 +394,15 @@
       necessidadeApoio: valor('necessidadeApoio')
     };
 
-    apiPost('registrarInscricao', { dados: dados })
+    /* Com retentativa: a inscrição é o único ponto em que uma falha custa a
+       pessoa inteira — todo o resto a coordenação conserta pelo painel depois.
+       Repetir é seguro porque o servidor reconhece o CPF e não duplica. */
+    apiPostComRetentativa('registrarInscricao', { dados: dados }, {
+      aoRepetir: function () {
+        recado.textContent = 'A conexão oscilou. Tentando de novo, só um instante...';
+        recado.className = 'recado';
+      }
+    })
       .then(function (resposta) {
         if (resposta.ok) {
           /* Não vai mais direto pro PagBank: a pessoa passa pela tela de
@@ -408,7 +416,11 @@
              que o CPF já tinha inscrição, para ela entender por que o código não
              é novo. */
           var destino = 'sucesso.html?ref=' + encodeURIComponent(resposta.codigo) + '&origem=cadastro';
-          if (resposta.jaInscrita) destino += '&ja=1';
+          /* O aviso "você já estava inscrita" só sai quando é verdade. Se a
+             primeira tentativa gravou e só a resposta se perdeu, a repetição
+             encontra esse mesmo CPF — dizer que ela já era inscrita assustaria
+             quem acabou de preencher a ficha pela primeira vez. */
+          if (resposta.jaInscrita && !resposta.houveRetentativa) destino += '&ja=1';
           window.location.href = destino;
           return;
         }
