@@ -100,7 +100,7 @@
 <script>
   var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxmftpeE1R9vP6Mj53OH6ltQ9JKPYfnoPYJWt1H3gm8S7GJ0kV9NJBLrQJyGKuIETF0/exec';
 </script>
-<script src="api.js?v=2"></script>
+<script src="api.js?v=3"></script>
 <script>
 (function () {
   var token = null;
@@ -277,7 +277,7 @@
       .then(function (resp) {
         botaoExcel.disabled = false;
         botaoExcel.textContent = textoOriginal;
-        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível exportar.'); return; }
+        if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível exportar.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       })
       .catch(function () {
@@ -294,7 +294,7 @@
       .then(function (resp) {
         botao.disabled = false;
         botao.textContent = textoOriginal;
-        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
+        if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
       })
       .catch(function () {
@@ -450,7 +450,7 @@
       botao.disabled = false;
       if (!resp.ok) {
         botao.textContent = textoOriginal;
-        alert(resp.mensagem || 'Não foi possível salvar.');
+        mostrarAviso(resp.mensagem || 'Não foi possível salvar.');
         if (resp.sessaoInvalida) mostrarLogin('Sessão expirada. Faça login novamente.');
         return;
       }
@@ -459,7 +459,7 @@
     }).catch(function () {
       botao.disabled = false;
       botao.textContent = textoOriginal;
-      alert('Não conseguimos falar com o servidor. Tente novamente.');
+      mostrarAviso('Não conseguimos falar com o servidor. Tente novamente.');
     });
   }
 

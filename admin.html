@@ -114,7 +114,7 @@
   </div>
 
 <script src="config.js"></script>
-<script src="api.js?v=2"></script>
+<script src="api.js?v=3"></script>
 <script>
 (function () {
   var token = null;
@@ -349,7 +349,7 @@
       .then(function (resp) {
         botaoExcel.disabled = false;
         botaoExcel.textContent = textoOriginal;
-        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível exportar.'); return; }
+        if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível exportar.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       })
       .catch(function () {
@@ -362,19 +362,27 @@
      ordem alfabética. Filtrar por "Pagas" antes de clicar gera só as pagas. */
   botaoFichas.addEventListener('click', function () {
     if (!visiveis.length) {
-      alert('Não há nenhuma inscrição na tela para gerar ficha.');
+      mostrarAviso('Não há nenhuma inscrição na tela para gerar ficha.');
       return;
     }
 
     /* O PDF é montado a partir da planilha, não da tela. Sem este aviso, quem
        acabou de marcar alguém como Pago e ainda não salvou receberia a ficha
        com a situação antiga, sem entender por quê. */
-    if (Object.keys(pendentes).length && !confirm(
-      'Você tem alterações que ainda não foram salvas.\n\n' +
-      'As fichas são geradas com o que está gravado na planilha, então essas ' +
-      'mudanças não vão aparecer. Gerar assim mesmo?'
-    )) return;
+    if (Object.keys(pendentes).length) {
+      mostrarConfirmacao({
+        titulo: 'Alterações ainda não salvas',
+        mensagem: 'As fichas são geradas com o que está gravado na planilha, então essas mudanças não vão aparecer.',
+        textoConfirmar: 'Gerar assim mesmo',
+        textoCancelar: 'Voltar',
+        aoConfirmar: gerarFichas
+      });
+      return;
+    }
+    gerarFichas();
+  });
 
+  function gerarFichas() {
     var textoOriginal = botaoFichas.textContent;
     botaoFichas.disabled = true;
     botaoFichas.textContent = 'Gerando ' + visiveis.length + '...';
@@ -394,14 +402,14 @@
           return;
         }
         restaurar();
-        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível gerar as fichas.'); return; }
+        if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível gerar as fichas.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
       })
       .catch(function () {
         restaurar();
-        alert('Não conseguimos gerar as fichas. Se forem muitas, tente filtrar e gerar em partes.');
+        mostrarAviso('Não conseguimos gerar as fichas. Se forem muitas, tente filtrar e gerar em partes.');
       });
-  });
+  }
 
   function carregarInscricoes() {
     mostrarLinhaUnica('Carregando inscrições...');
@@ -640,7 +648,7 @@
         }
         if (!resp.ok) {
           atualizarBotaoSalvar();
-          alert(resp.mensagem || 'Não foi possível salvar.');
+          mostrarAviso(resp.mensagem || 'Não foi possível salvar.');
           return;
         }
 
@@ -668,7 +676,7 @@
         atualizarBotaoSalvar();
 
         if (resp.erros && resp.erros.length) {
-          alert('Salvei ' + (resp.salvos || 0) + '. Estas não deram certo:\n\n'
+          mostrarAviso('Salvei ' + (resp.salvos || 0) + '. Estas não deram certo:\n\n'
             + resp.erros.map(function (e) { return '• ' + e.codigo + ': ' + e.mensagem; }).join('\n'));
         } else {
           botaoSalvarTudo.textContent = 'Salvo!';
@@ -677,7 +685,7 @@
       })
       .catch(function () {
         atualizarBotaoSalvar();
-        alert('Não conseguimos falar com o servidor. Suas alterações continuam na tela — é só tentar salvar de novo.');
+        mostrarAviso('Não conseguimos falar com o servidor. Suas alterações continuam na tela — é só tentar salvar de novo.');
       });
   }
 
@@ -770,20 +778,21 @@
    * Clicar duas vezes na mesma pessoa envia o MESMO link: o servidor só cria um
    * checkout novo se o atual venceu ou o valor mudou.
    */
+  /* Pergunta antes: nem todo contato com quem não pagou é cobrança. Os dois
+     window.open acontecem dentro do clique dos botões do modal (ver api.js),
+     então não caem no bloqueio de pop-up. */
   function cobrarPorWhatsApp(item, botao) {
-    /* Pergunta antes: nem todo contato com quem não pagou é cobrança. confirm()
-       é síncrono, então ainda estamos "dentro do clique" — a janela aberta em
-       seguida não é tratada como pop-up. */
-    var querCobrar = confirm(
-      'Esta pessoa ainda não pagou.\n\n' +
-      'OK — abrir o WhatsApp com a mensagem de cobrança e o link de pagamento\n' +
-      'Cancelar — abrir só a conversa, sem mensagem'
-    );
-    if (!querCobrar) {
-      window.open(urlWhatsApp(item.telefone, ''), '_blank', 'noopener');
-      return;
-    }
+    mostrarConfirmacao({
+      titulo: 'Esta pessoa ainda não pagou',
+      mensagem: 'O que você quer fazer?',
+      textoConfirmar: 'Mensagem de cobrança com o link',
+      textoCancelar: 'Abrir só a conversa',
+      aoConfirmar: function () { enviarCobranca(item, botao); },
+      aoCancelar: function () { window.open(urlWhatsApp(item.telefone, ''), '_blank', 'noopener'); }
+    });
+  }
 
+  function enviarCobranca(item, botao) {
     var janela = window.open('', '_blank');
     botao.disabled = true;
     botao.textContent = 'Gerando...';
@@ -803,7 +812,7 @@
         restaurar();
         if (!resp.ok || !resp.paymentUrl) {
           if (janela) janela.close();
-          alert(resp.mensagem || 'Não foi possível gerar o link de pagamento.');
+          mostrarAviso(resp.mensagem || 'Não foi possível gerar o link de pagamento.');
           return;
         }
         var url = urlWhatsApp(item.telefone, mensagemCobranca(item.nome, resp.paymentUrl));
@@ -812,7 +821,7 @@
       .catch(function () {
         if (janela) janela.close();
         restaurar();
-        alert('Não conseguimos falar com o servidor. Tente novamente.');
+        mostrarAviso('Não conseguimos falar com o servidor. Tente novamente.');
       });
   }
 
@@ -824,7 +833,7 @@
       .then(function (resp) {
         botao.disabled = false;
         botao.textContent = textoOriginal;
-        if (!resp.ok) { alert(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
+        if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
       })
       .catch(function () {
