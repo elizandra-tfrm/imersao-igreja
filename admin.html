@@ -352,9 +352,13 @@
         if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível exportar.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       })
-      .catch(function () {
+      .catch(function (erro) {
         botaoExcel.disabled = false;
         botaoExcel.textContent = textoOriginal;
+        // Sessão expirada já voltou para o login em apiGetAdmin; qualquer outra
+        // falha precisa aparecer — antes o clique simplesmente "não fazia nada".
+        if (erro && erro.message === 'sessao_invalida') return;
+        mostrarAviso('Não conseguimos gerar o Excel agora. Verifique sua conexão e tente novamente.');
       });
   });
 
@@ -862,9 +866,13 @@
         if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível gerar a ficha.'); return; }
         baixarArquivo(resp.base64, resp.nomeArquivo, 'application/pdf');
       })
-      .catch(function () {
+      .catch(function (erro) {
         botao.disabled = false;
         botao.textContent = textoOriginal;
+        // Sessão expirada já voltou para o login em apiGetAdmin; qualquer outra
+        // falha precisa aparecer — antes o clique simplesmente "não fazia nada".
+        if (erro && erro.message === 'sessao_invalida') return;
+        mostrarAviso('Não conseguimos gerar a ficha agora. Verifique sua conexão e tente novamente.');
       });
   }
 
