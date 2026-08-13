@@ -1706,3 +1706,22 @@ table.admin-tabela {
 }
 .admin-tabela-wrap::-webkit-scrollbar-thumb:hover { background-color: rgba(123,94,167,0.55); }
 .admin-tabela-wrap::-webkit-scrollbar-corner { background: transparent; }
+
+/* X de fechar dos modais de aviso/confirmação. O modal do CPF (redirecionamento)
+   não o usa de propósito: lá as duas saídas já são os próprios botões. */
+.modal-caixa { position: relative; }
+.modal-fechar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+}
+.modal-fechar:hover { color: var(--purple-deep); background: rgba(123,94,167,0.08); }

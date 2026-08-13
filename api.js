@@ -69,7 +69,12 @@ function apiPostComRetentativa(action, corpo, opcoes) {
    chamados DENTRO do clique do botão do modal. É isso que permite usar
    window.open neles sem cair no bloqueio de pop-up. */
 
-function montarModalBase_(titulo, mensagem) {
+/**
+ * Base dos modais. `aoFechar` é o "sair sem escolher": responde ao X do canto,
+ * ao clique fora da caixa e à tecla Esc — os três caminhos que qualquer pessoa
+ * tenta quando só quer fechar.
+ */
+function montarModalBase_(titulo, mensagem, aoFechar) {
   var fundo = document.createElement('div');
   fundo.className = 'modal-fundo';
 
@@ -77,6 +82,14 @@ function montarModalBase_(titulo, mensagem) {
   caixa.className = 'vidro modal-caixa';
   caixa.setAttribute('role', 'alertdialog');
   caixa.setAttribute('aria-modal', 'true');
+
+  var fechar = document.createElement('button');
+  fechar.type = 'button';
+  fechar.className = 'modal-fechar';
+  fechar.setAttribute('aria-label', 'Fechar');
+  fechar.textContent = '×';
+  fechar.addEventListener('click', function () { aoFechar(); });
+  caixa.appendChild(fechar);
 
   var h2 = document.createElement('h2');
   h2.textContent = titulo;
@@ -92,7 +105,19 @@ function montarModalBase_(titulo, mensagem) {
   caixa.appendChild(acoes);
 
   fundo.appendChild(caixa);
-  return { fundo: fundo, acoes: acoes };
+  fundo.addEventListener('click', function (e) { if (e.target === fundo) aoFechar(); });
+
+  var aoTeclar = function (e) { if (e.key === 'Escape') aoFechar(); };
+  document.addEventListener('keydown', aoTeclar);
+
+  return {
+    fundo: fundo,
+    acoes: acoes,
+    remover: function () {
+      document.removeEventListener('keydown', aoTeclar);
+      fundo.remove();
+    }
+  };
 }
 
 function botaoDeModal_(texto, classe, aoClicar) {
@@ -107,11 +132,10 @@ function botaoDeModal_(texto, classe, aoClicar) {
 /** Aviso com um botão OK. Devolve uma Promise que resolve quando fechar. */
 function mostrarAviso(mensagem, titulo) {
   return new Promise(function (resolve) {
-    var m = montarModalBase_(titulo || 'Aviso', mensagem);
-    var fechar = function () { m.fundo.remove(); resolve(); };
+    var fechar = function () { m.remover(); resolve(); };
+    var m = montarModalBase_(titulo || 'Aviso', mensagem, function () { fechar(); });
     var ok = botaoDeModal_('Entendi', 'botao', fechar);
     m.acoes.appendChild(ok);
-    m.fundo.addEventListener('click', function (e) { if (e.target === m.fundo) fechar(); });
     document.body.appendChild(m.fundo);
     ok.focus();
   });
@@ -120,24 +144,23 @@ function mostrarAviso(mensagem, titulo) {
 /**
  * Confirmação com dois caminhos nomeados (nada de "OK/Cancelar" genérico).
  * opcoes: { titulo, mensagem, textoConfirmar, textoCancelar, aoConfirmar, aoCancelar }
- * Clicar fora da caixa só fecha, sem escolher caminho nenhum.
+ * O X do canto, o clique fora da caixa e a tecla Esc só fecham, sem escolher
+ * caminho nenhum — fechar não é cancelar.
  */
 function mostrarConfirmacao(opcoes) {
-  var m = montarModalBase_(opcoes.titulo || 'Confirmar', opcoes.mensagem || '');
-  var fechar = function () { m.fundo.remove(); };
+  var m = montarModalBase_(opcoes.titulo || 'Confirmar', opcoes.mensagem || '', function () { m.remover(); });
 
   var confirmar = botaoDeModal_(opcoes.textoConfirmar || 'Confirmar', 'botao', function () {
-    fechar();
+    m.remover();
     if (opcoes.aoConfirmar) opcoes.aoConfirmar();
   });
   var cancelar = botaoDeModal_(opcoes.textoCancelar || 'Cancelar', 'botao-mini', function () {
-    fechar();
+    m.remover();
     if (opcoes.aoCancelar) opcoes.aoCancelar();
   });
 
   m.acoes.appendChild(confirmar);
   m.acoes.appendChild(cancelar);
-  m.fundo.addEventListener('click', function (e) { if (e.target === m.fundo) fechar(); });
   document.body.appendChild(m.fundo);
   confirmar.focus();
 }
