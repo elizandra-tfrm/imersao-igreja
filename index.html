@@ -97,7 +97,10 @@
 
             <div class="campo">
               <label for="telefone">Telefone / WhatsApp</label>
-              <input type="tel" id="telefone" name="telefone" inputmode="numeric" placeholder="(67) 99999-9999" maxlength="15" autocomplete="tel" required>
+              <!-- maxlength 20 (e não 15): precisa sobrar espaço pra quem digita o 55
+                   do país na frente — a máscara descarta o 55 sozinha. Com 15, o campo
+                   enchia e os últimos dígitos do número nem entravam. -->
+              <input type="tel" id="telefone" name="telefone" inputmode="numeric" placeholder="(67) 99999-9999" maxlength="20" autocomplete="tel" required>
               <div class="erro-campo" id="erro-telefone"></div>
             </div>
 
@@ -300,7 +303,7 @@
 
 <script src="config.js"></script>
 <script src="api.js?v=4"></script>
-<script src="mascaras.js?v=2"></script>
+<script src="mascaras.js?v=3"></script>
 <script src="animacoes.js?v=2"></script>
 <script>
 (function () {

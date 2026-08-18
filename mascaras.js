@@ -19,7 +19,14 @@ function mascaraCPF(texto) {
 
 /** 67999999999 -> (67) 99999-9999 · aceita fixo (10) e celular (11) */
 function mascaraTelefone(texto) {
-  var d = somenteNumeros(texto).slice(0, 11);
+  var d = somenteNumeros(texto).slice(0, 13);
+  /* Quem digita o número com o código do país (55 + DDD + número, 12-13
+     dígitos) não pode perder o FIM do número — aconteceu de verdade: o campo
+     enchia com o 55 e os dois últimos dígitos nem entravam. O 55 é descartado
+     assim que o 12º dígito chega. Com 11 dígitos começando em 55 nada é
+     feito: 55 também é um DDD real (região de Santa Maria-RS). */
+  if (d.length >= 12 && d.indexOf('55') === 0) d = d.slice(2);
+  d = d.slice(0, 11);
   if (d.length === 0) return '';
   if (d.length <= 2) return '(' + d;
   if (d.length <= 6) return '(' + d.slice(0, 2) + ') ' + d.slice(2);
