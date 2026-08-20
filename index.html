@@ -154,8 +154,8 @@
             </div>
 
             <div class="campo">
-              <label for="email">E-mail</label>
-              <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com" required>
+              <label for="email">E-mail <span class="opcional">(opcional)</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="voce@email.com">
               <div class="erro-campo" id="erro-email"></div>
             </div>
           </div>
@@ -311,8 +311,9 @@
   var botao = document.getElementById('botao-enviar');
   var recado = document.getElementById('recado');
   /* Todos os campos que podem receber uma mensagem de erro embaixo (cada um tem
-     um <div class="erro-campo" id="erro-XXX">). Só o apelido fica de fora — é o
-     único campo opcional do formulário. */
+     um <div class="erro-campo" id="erro-XXX">). Só o apelido fica de fora. O
+     e-mail é opcional, mas continua aqui: se vier preenchido errado, o servidor
+     devolve erro nele. */
   var camposComErro = [
     'nome', 'telefone', 'idade', 'estadoCivil', 'temFilhos', 'quantosFilhos',
     'participaIgreja', 'qualIgreja', 'email', 'cpf'
