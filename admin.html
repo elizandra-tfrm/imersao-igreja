@@ -67,7 +67,7 @@
       <button type="button" class="card-metrica" data-card="todas" aria-pressed="false">
         <span class="card-rotulo">Inscrições</span>
         <strong class="card-numero" id="card-todas-numero">—</strong>
-        <span class="card-nota"></span>
+        <span class="card-nota" id="card-todas-nota"></span>
       </button>
       <button type="button" class="card-metrica card-metrica--pagas" data-card="pagas" aria-pressed="false">
         <span class="card-rotulo">Pagas</span>
@@ -88,6 +88,13 @@
       </div>
     </div>
     <p class="admin-cards-extra" id="cards-extra" hidden></p>
+    <!-- Limite de vagas: a coordenação muda aqui, sem mexer em código. Ao
+         atingir o limite, o formulário público passa a dizer "encerradas". -->
+    <p class="admin-cards-extra" id="controle-vagas" hidden>
+      Limite de vagas:
+      <input type="number" id="limite-vagas" min="1" step="1" style="width:72px;margin:0 6px;" aria-label="Limite de vagas">
+      <button type="button" class="botao-mini" id="botao-limite">Salvar limite</button>
+    </p>
 
     <div class="admin-tabela-wrap">
       <table class="admin-tabela">
@@ -150,6 +157,15 @@
   var cards = document.getElementById('admin-cards');
   var cardsExtra = document.getElementById('cards-extra');
   var cardTodasNumero = document.getElementById('card-todas-numero');
+  var cardTodasNota = document.getElementById('card-todas-nota');
+  var controleVagas = document.getElementById('controle-vagas');
+  var inputLimite = document.getElementById('limite-vagas');
+  var botaoLimite = document.getElementById('botao-limite');
+  /* { limite, ocupadas, encerradas } vindo do servidor; `ocupadas` é refeito
+     aqui a cada mudança de situação (marcar Desistiu devolve a vaga na hora). */
+  var vagas = null;
+  /* Espelha STATUS_LIBERAM_VAGA do servidor (Config.gs). */
+  var STATUS_SEM_VAGA = ['Desistiu', 'Cancelado'];
   var cardPagasNumero = document.getElementById('card-pagas-numero');
   var cardPagasNota = document.getElementById('card-pagas-nota');
   var cardAguardandoNumero = document.getElementById('card-aguardando-numero');
@@ -425,10 +441,12 @@
           return;
         }
         todasInscricoes = resp.inscricoes || [];
+        vagas = resp.vagas || null;
         pendentes = {};
         atualizarBotaoSalvar();
         preencherFiltroSituacao();
         atualizarCards();
+        atualizarVagas();
         aplicarFiltros();
       })
       .catch(function (erro) {
@@ -681,6 +699,7 @@
 
         preencherFiltroSituacao();
         atualizarCards();
+        atualizarVagas();
         aplicarFiltros();
         atualizarBotaoSalvar();
 
@@ -755,6 +774,54 @@
 
     cards.hidden = false;
   }
+
+  /**
+   * Nota de vagas no card "Inscrições" e o controle de limite. A contagem de
+   * ocupadas é feita aqui, a partir da lista carregada, para refletir na hora
+   * uma desistência recém-salva; o limite vem do servidor.
+   */
+  function atualizarVagas() {
+    if (!vagas) return;
+    var ocupadas = todasInscricoes.filter(function (i) {
+      return STATUS_SEM_VAGA.indexOf(i.status) === -1;
+    }).length;
+    vagas.ocupadas = ocupadas;
+    vagas.encerradas = ocupadas >= vagas.limite;
+
+    cardTodasNota.textContent = vagas.encerradas
+      ? 'ENCERRADAS — ' + ocupadas + ' de ' + vagas.limite + ' vagas'
+      : ocupadas + ' de ' + vagas.limite + ' vagas ocupadas';
+
+    // Não sobrescreve o que a coordenação estiver digitando agora.
+    if (document.activeElement !== inputLimite) inputLimite.value = vagas.limite;
+    controleVagas.hidden = false;
+  }
+
+  botaoLimite.addEventListener('click', function () {
+    var novo = Number(inputLimite.value);
+    if (!(novo >= 1)) { mostrarAviso('Informe um número de vagas a partir de 1.'); return; }
+    botaoLimite.disabled = true;
+    apiPost('adminDefinirLimiteVagas', { token: token, limite: novo })
+      .then(function (resp) {
+        botaoLimite.disabled = false;
+        if (resp && resp.sessaoInvalida) { mostrarLogin('Sessão expirada. Faça login novamente.'); return; }
+        if (!resp.ok) { mostrarAviso(resp.mensagem || 'Não foi possível salvar o limite.'); return; }
+        vagas = resp.vagas;
+        atualizarVagas();
+        var restam = vagas.limite - vagas.ocupadas;
+        mostrarAviso(
+          'Limite de vagas agora é ' + vagas.limite + '. ' +
+          (vagas.encerradas
+            ? 'O formulário já está mostrando "Inscrições encerradas".'
+            : 'Restam ' + restam + (restam === 1 ? ' vaga.' : ' vagas.')),
+          'Salvo'
+        );
+      })
+      .catch(function () {
+        botaoLimite.disabled = false;
+        mostrarAviso('Não conseguimos falar com o servidor. Tente novamente.');
+      });
+  });
 
   function marcarCardAtivo() {
     var botoes = cards.querySelectorAll('.card-metrica[data-card]');

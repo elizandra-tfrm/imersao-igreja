@@ -279,6 +279,26 @@
       </div>
     </form>
 
+    <!-- Inscrições encerradas (limite de vagas atingido). O campo de CPF do
+         formulário é MOVIDO para cá pelo JS — leva junto a consulta por CPF —
+         para quem já se inscreveu continuar achando a própria página. O limite
+         barra vaga nova, não quem já tem vaga. -->
+    <section class="secao vidro" id="bloco-encerradas" hidden>
+      <div class="secao-cabeca">
+        <h2>Inscrições encerradas</h2>
+      </div>
+      <div class="secao-notas">
+        <p class="secao-nota">Todas as vagas da imersão foram preenchidas. Se quiser entrar na lista de espera, fale com a Lilian no WhatsApp.</p>
+      </div>
+      <div class="acao">
+        <a class="botao" id="link-zap-encerradas" href="https://wa.me/5567996083444" target="_blank" rel="noopener">Falar com a Lilian no WhatsApp</a>
+      </div>
+      <div class="secao-notas" style="margin-top:18px;">
+        <p class="secao-nota"><strong>Já fez sua inscrição?</strong> Digite seu CPF abaixo para abrir a sua página.</p>
+      </div>
+      <div class="campos" id="encerradas-campos"></div>
+    </section>
+
   </div>
 
   <p class="rodape">
@@ -402,12 +422,32 @@
     document.getElementById('modal-ficar').addEventListener('click', fecharModal);
   })();
 
-  /* Nome do evento e valor vêm do backend, para nunca divergirem da planilha */
+  /* Limite de vagas atingido: o formulário sai de cena e entra o aviso. O campo
+     de CPF é MOVIDO (não copiado) para dentro do aviso — os ouvintes da consulta
+     por CPF vão junto, então quem já se inscreveu continua sendo reconhecida e
+     levada para a própria página. Falha de rede na consulta de config deixa o
+     formulário normal: o servidor barra de novo no envio, se for o caso. */
+  var encerradasMostrado = false;
+  function mostrarEncerradas() {
+    if (encerradasMostrado) return;
+    encerradasMostrado = true;
+    var campoCpf = document.getElementById('cpf').closest('.campo');
+    document.getElementById('encerradas-campos').appendChild(campoCpf);
+    document.getElementById('link-zap-encerradas').href =
+      'https://wa.me/5567996083444?text=' + encodeURIComponent('Olá! Vi que as inscrições da Imersão estão encerradas. Dá para entrar na lista de espera?');
+    form.hidden = true;
+    var investimento = document.querySelector('.investimento');
+    if (investimento) investimento.hidden = true; // "Investimento R$ ..." não faz sentido com a ficha fechada
+    document.getElementById('bloco-encerradas').hidden = false;
+  }
+
+  /* Nome do evento, valor e situação das vagas vêm do backend, para nunca divergirem da planilha */
   apiGet('config').then(function (resp) {
     if (resp && resp.ok && resp.valorFormatado) {
       document.getElementById('valor-inscricao').textContent = resp.valorFormatado;
       document.getElementById('valor-evento').textContent = resp.valorFormatado;
     }
+    if (resp && resp.ok && resp.inscricoesEncerradas) mostrarEncerradas();
   }).catch(function () { /* mantém o valor já impresso na página */ });
 
   /* Sim/Não: marca visualmente a opção e abre o campo "Se sim, ..." */
@@ -518,6 +558,14 @@
              quem acabou de preencher a ficha pela primeira vez. */
           if (resposta.jaInscrita && !resposta.houveRetentativa) destino += '&ja=1';
           window.location.href = destino;
+          return;
+        }
+        /* A última vaga foi tomada enquanto ela preenchia: o servidor é quem
+           decide, e a página passa a mostrar o aviso de encerradas. */
+        if (resposta.inscricoesEncerradas) {
+          liberarBotao();
+          mostrarEncerradas();
+          document.getElementById('bloco-encerradas').scrollIntoView({ behavior: 'smooth', block: 'start' });
           return;
         }
         if (!resposta.campo || !mostrarErroCampo(resposta.campo, resposta.mensagem)) {
