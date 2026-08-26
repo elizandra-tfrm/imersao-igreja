@@ -239,12 +239,6 @@
     return 'https://wa.me/' + digitos + (texto ? '?text=' + encodeURIComponent(texto) : '');
   }
 
-  var ROTULO_SEM_COBRANCA = {
-    Isento: ['isenta', 'isentas'],
-    Desistiu: ['desistiu', 'desistiram'],
-    Cancelado: ['cancelada', 'canceladas']
-  };
-
   /* Espelha origemDoPagamento_ (Config.gs) para a linha recém-salva, sem esperar
      uma recarga. Aqui não há Charge_Id à vista, mas quem tem cobrança confirmada
      está travado e nem chega a ser salvo por esta via. Pendente com link em
@@ -734,18 +728,11 @@
   function atualizarCards() {
     var contas = { pagas: 0, aguardando: 0, outras: 0 };
     var centavos = { pagas: 0, aguardando: 0 };
-    var semCobranca = {};
 
     todasInscricoes.forEach(function (item) {
       var grupo = grupoDaSituacao(item.status);
       contas[grupo]++;
-
-      if (grupo === 'outras') {
-        var situacao = item.status || '—';
-        semCobranca[situacao] = (semCobranca[situacao] || 0) + 1;
-      } else {
-        centavos[grupo] += Number(item.valorCentavos) || 0;
-      }
+      if (grupo !== 'outras') centavos[grupo] += Number(item.valorCentavos) || 0;
     });
 
     var total = todasInscricoes.length;
@@ -763,16 +750,8 @@
     cardDinheiroNumero.textContent = formatarReais(centavos.pagas);
     cardDinheiroNota.textContent = 'de ' + formatarReais(centavos.pagas + centavos.aguardando) + ' previstos';
 
-    // Só aparece quando existe alguma — na maior parte do tempo fica invisível.
-    var trechos = Object.keys(semCobranca).map(function (situacao) {
-      var quantas = semCobranca[situacao];
-      var rotulo = ROTULO_SEM_COBRANCA[situacao];
-      return quantas + ' ' + (rotulo ? rotulo[quantas === 1 ? 0 : 1] : situacao.toLowerCase());
-    });
-    // "não ocupam vaga" explica por que o total (51) difere das ocupadas (49).
-    cardsExtra.textContent = trechos.length ? 'Sem cobrança e sem ocupar vaga: ' + trechos.join(' · ') + '.' : '';
-    cardsExtra.hidden = !trechos.length;
-
+    // A linha-resumo abaixo dos cards é montada em atualizarVagas — o texto
+    // das vagas e o das desistências são a MESMA história, contada uma vez só.
     cards.hidden = false;
   }
 
@@ -797,6 +776,35 @@
       ? 'VAGAS ESGOTADAS (' + ocupadas + ' de ' + vagas.limite + ' ocupadas)'
       : (livres === 1 ? 'resta 1 vaga' : 'restam ' + livres + ' vagas')
         + ' (' + ocupadas + ' de ' + vagas.limite + ' ocupadas)';
+
+    /* Linha-resumo abaixo dos cards, em frase corrida — conta a história
+       inteira de uma vez ("das 51, 2 desistiram, ficam 49, sobra 1"), em vez
+       de jogar números soltos que o leitor precisa somar de cabeça. */
+    var contagem = { Desistiu: 0, Cancelado: 0, Isento: 0 };
+    todasInscricoes.forEach(function (i) {
+      if (contagem[i.status] !== undefined) contagem[i.status]++;
+    });
+    var devolvidas = [];
+    if (contagem.Desistiu) devolvidas.push(contagem.Desistiu === 1 ? '1 desistiu' : contagem.Desistiu + ' desistiram');
+    if (contagem.Cancelado) devolvidas.push(contagem.Cancelado === 1 ? '1 foi cancelada' : contagem.Cancelado + ' foram canceladas');
+
+    var partes = [];
+    if (devolvidas.length) {
+      partes.push(
+        'Das ' + todasInscricoes.length + ' inscrições, ' + devolvidas.join(' e ') +
+        ' — essas vagas voltaram. Ficam ' + ocupadas + ' ocupando vaga, ' +
+        (vagas.encerradas
+          ? 'e não sobra nenhuma das ' + vagas.limite + '.'
+          : 'então ' + (livres === 1 ? 'sobra 1 vaga' : 'sobram ' + livres + ' vagas') + ' das ' + vagas.limite + '.')
+      );
+    }
+    if (contagem.Isento) {
+      partes.push(contagem.Isento === 1
+        ? '1 isenta ocupa vaga, mas não paga.'
+        : contagem.Isento + ' isentas ocupam vaga, mas não pagam.');
+    }
+    cardsExtra.textContent = partes.join(' ');
+    cardsExtra.hidden = !partes.length;
 
     // Não sobrescreve o que a coordenação estiver digitando agora.
     if (document.activeElement !== inputLimite) inputLimite.value = vagas.limite;
