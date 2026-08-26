@@ -769,7 +769,8 @@
       var rotulo = ROTULO_SEM_COBRANCA[situacao];
       return quantas + ' ' + (rotulo ? rotulo[quantas === 1 ? 0 : 1] : situacao.toLowerCase());
     });
-    cardsExtra.textContent = trechos.length ? 'Sem cobrança: ' + trechos.join(' · ') + '.' : '';
+    // "não ocupam vaga" explica por que o total (51) difere das ocupadas (49).
+    cardsExtra.textContent = trechos.length ? 'Sem cobrança e sem ocupar vaga: ' + trechos.join(' · ') + '.' : '';
     cardsExtra.hidden = !trechos.length;
 
     cards.hidden = false;
@@ -788,9 +789,14 @@
     vagas.ocupadas = ocupadas;
     vagas.encerradas = ocupadas >= vagas.limite;
 
+    /* A frase destaca o que a coordenação quer saber: quantas vagas RESTAM.
+       "49 de 50 ocupadas" logo abaixo do total (51, que inclui desistências)
+       confundia — o detalhe das ocupadas vai depois, entre parênteses. */
+    var livres = Math.max(0, vagas.limite - ocupadas);
     cardTodasNota.textContent = vagas.encerradas
-      ? 'ENCERRADAS — ' + ocupadas + ' de ' + vagas.limite + ' vagas'
-      : ocupadas + ' de ' + vagas.limite + ' vagas ocupadas';
+      ? 'VAGAS ESGOTADAS (' + ocupadas + ' de ' + vagas.limite + ' ocupadas)'
+      : (livres === 1 ? 'resta 1 vaga' : 'restam ' + livres + ' vagas')
+        + ' (' + ocupadas + ' de ' + vagas.limite + ' ocupadas)';
 
     // Não sobrescreve o que a coordenação estiver digitando agora.
     if (document.activeElement !== inputLimite) inputLimite.value = vagas.limite;
