@@ -16,6 +16,13 @@
    reaproveitado por outra tela — e no dia do evento mexer no CSS comum
    significaria arriscar o formulário de inscrição e os dois painéis. */
 
+/* Rede de segurança: nesta página o conteúdo NUNCA depende de JavaScript para
+   aparecer. As seções não usam .revela (o efeito de surgir ao rolar) de
+   propósito — num salão cheio, com sinal ruim e pressa, um detector de
+   rolagem que falhe deixaria a pessoa olhando para um vazio. Esta regra
+   garante a visibilidade mesmo se a classe voltar por engano. */
+.folha .revela { opacity: 1 !important; transform: none !important; }
+
 .capa-avaliacao { text-align: center; }
 .capa-avaliacao h1 {
   font-family: var(--font-display);
@@ -204,9 +211,10 @@
   <div class="miolo">
 
     <form id="form-avaliacao" novalidate>
+      <div class="miolo">
 
       <!-- ── Nota geral ─────────────────────────────────────── -->
-      <section class="secao vidro revela nota-geral">
+      <section class="secao vidro nota-geral">
         <div class="secao-cabeca" style="align-items:center;padding-right:0;">
           <h2 style="text-align:center;">A imersão como um todo</h2>
         </div>
@@ -215,7 +223,7 @@
       </section>
 
       <!-- ── Aspectos ───────────────────────────────────────── -->
-      <section class="secao vidro revela">
+      <section class="secao vidro">
         <span class="secao-fantasma" aria-hidden="true">★</span>
         <div class="secao-cabeca">
           <span class="secao-rotulo">Sobre o dia</span>
@@ -225,7 +233,7 @@
       </section>
 
       <!-- ── Perguntas abertas ──────────────────────────────── -->
-      <section class="secao vidro revela">
+      <section class="secao vidro">
         <span class="secao-fantasma" aria-hidden="true">♡</span>
         <div class="secao-cabeca">
           <span class="secao-rotulo">Seu coração</span>
@@ -246,7 +254,7 @@
       </section>
 
       <!-- ── Próximos passos ────────────────────────────────── -->
-      <section class="secao vidro revela">
+      <section class="secao vidro">
         <span class="secao-fantasma" aria-hidden="true">→</span>
         <div class="secao-cabeca">
           <span class="secao-rotulo">Daqui pra frente</span>
@@ -279,6 +287,7 @@
         <p class="enviando-aviso" id="aviso-rascunho">Suas respostas ficam salvas neste celular enquanto você preenche.</p>
       </div>
 
+      </div>
     </form>
 
     <!-- ── Agradecimento ────────────────────────────────────── -->
