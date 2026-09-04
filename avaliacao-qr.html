@@ -112,7 +112,9 @@ body {
 /* Empilhado (celular, tablet em pé): a folga do meio não existe, então ela sobe
    para o canto de cima, longe do QR. */
 @media (max-aspect-ratio: 1/1) {
-  .borboleta-fundo { top: -7vh; right: 0; width: clamp(64px, 16vw, 96px); }
+  /* Deslocamento em px, não em vh: -7vh numa tela de 667px jogava a borboleta
+     para FORA do topo da página. Aqui ela apenas encosta no canto do texto. */
+  .borboleta-fundo { top: -12px; right: -4px; width: clamp(64px, 16vw, 96px); }
 }
 @keyframes derivar {
   0%, 100% { transform: translate(0, 0) rotate(-5deg); }
