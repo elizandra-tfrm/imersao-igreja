@@ -91,7 +91,11 @@
 /* Nota geral: o coração da pesquisa, então ganha o tamanho todo. */
 .nota-geral { text-align: center; }
 .nota-geral .estrelas { gap: 4px; margin: 4px 0 2px; }
-.nota-geral .estrela { min-width: 17vw; max-width: 62px; padding: 8px 4px; }
+/* clamp(), e não min-width + max-width: em CSS o MÍNIMO vence o teto, então
+   `min-width: 17vw` com `max-width: 62px` dava estrelas de 212px numa tela de
+   1250px — três ocupavam o cartão inteiro e as outras duas saíam da tela.
+   Com clamp o teto é respeitado, e o piso de 44px mantém o alvo de toque. */
+.nota-geral .estrela { width: clamp(44px, 14vw, 64px); padding: 8px 4px; }
 .nota-geral .estrela.acesa { filter: drop-shadow(0 3px 8px rgba(201, 169, 110, 0.45)); }
 .legenda-nota {
   font-family: var(--font-display);
