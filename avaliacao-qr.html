@@ -125,8 +125,20 @@ h1 em { display: block; font-style: italic; color: #C4ADE0; }
    Cartão branco: um QR escuro sobre fundo escuro não é lido por câmera
    nenhuma, e a moldura clara também dá a margem de silêncio que o padrão
    exige em volta do código. */
+/* A coluna do QR centraliza e deixa o cartão encolher até o tamanho da imagem.
+   Sem isto, a legenda ("É RÁPIDO — MENOS DE 2 MINUTOS") é mais larga que o QR,
+   a coluna fica com a largura dela, e o cartão branco — sendo um bloco — estica
+   junto, sobrando uma faixa branca à direita do código. */
+.coluna-qr {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .cartao-qr {
   flex: none;
+  width: fit-content;
   background: #FFFFFF;
   border-radius: 1.6vmin;
   padding: 2.2vmin;
@@ -145,6 +157,7 @@ h1 em { display: block; font-style: italic; color: #C4ADE0; }
 
 .aponte {
   margin-top: 1.6vh;
+  max-width: 100%;
   text-align: center;
   font-size: clamp(0.8rem, 1.4vw, 1.15rem);
   letter-spacing: 0.16em;
@@ -174,7 +187,7 @@ h1 em { display: block; font-style: italic; color: #C4ADE0; }
       </p>
     </div>
 
-    <div>
+    <div class="coluna-qr">
       <div class="cartao-qr">
         <img src="img/qr-avaliacao.png" alt="QR code para a avaliação da imersão">
       </div>
