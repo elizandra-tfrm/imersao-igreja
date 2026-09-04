@@ -74,11 +74,17 @@
   min-width: 44px;
   min-height: 44px;
   cursor: pointer;
-  color: var(--hairline);
+  color: #FCF9F4;
   transition: transform 0.18s var(--ease), color 0.18s var(--ease);
 }
 .estrela svg { display: block; width: 100%; height: auto; pointer-events: none; }
+/* A estrela vazia é quase branca COM contorno, e a escolhida é dourado cheio.
+   Antes as duas eram tons de bege parecidos (#E8DFD2 e #C9A96E): na tela de um
+   celular, num salão claro, não dava para ver quantas já tinham sido marcadas —
+   que é a única informação que essa parte da pesquisa precisa transmitir. */
+.estrela svg path { stroke: #D3C4AB; stroke-width: 1.1; vector-effect: non-scaling-stroke; }
 .estrela.acesa { color: var(--gold); }
+.estrela.acesa svg path { stroke: #A07C36; }
 .estrela:active { transform: scale(0.88); }
 .estrela:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; border-radius: 8px; }
 
