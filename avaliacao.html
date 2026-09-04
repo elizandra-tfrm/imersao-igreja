@@ -170,6 +170,22 @@
   text-align: left;
 }
 
+/* Passar o celular para outra pessoa: discreto de propósito — é uma saída de
+   emergência, não uma ação que a página esteja sugerindo. */
+.passar-celular { margin-top: 26px; }
+.passar-celular button {
+  background: none;
+  border: 0;
+  padding: 6px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.passar-celular button:hover { color: var(--lavender); }
+
 /* Contador de caracteres discreto, só quando a pessoa está perto do limite. */
 .contador-texto {
   font-size: 0.72rem;
@@ -304,9 +320,12 @@
       <h2 id="titulo-obrigada">Obrigada por compartilhar!</h2>
       <p id="texto-obrigada">Sua resposta chegou até nós. Cada palavra vai ser lida com carinho pela coordenação.</p>
       <p class="versiculo">"E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor."<br><span style="font-size:0.85rem;font-style:normal;color:var(--text-muted);">Colossenses 3:23</span></p>
-      <div class="painel-acoes" style="margin-top:22px;">
-        <button type="button" class="botao-mini" id="botao-responder-outra">Responder de novo</button>
-      </div>
+      <!-- Link discreto, não botão: "responder de novo" soava como convite a
+           responder duas vezes. O que existe de verdade é o caso do celular
+           emprestado — então é isso que está escrito, em letra miúda. -->
+      <p class="passar-celular">
+        <button type="button" id="botao-responder-outra">Outra pessoa vai responder neste celular?</button>
+      </p>
     </section>
 
   </div>
@@ -534,7 +553,7 @@
   if (ler(CHAVE_ENVIADA)) {
     document.getElementById('titulo-obrigada').textContent = 'Você já respondeu!';
     document.getElementById('texto-obrigada').textContent =
-      'Sua avaliação já chegou até nós — muito obrigada. Se este celular for de mais alguém que ainda quer responder, use o botão abaixo.';
+      'Sua avaliação já chegou até nós — muito obrigada.';
     mostrarObrigada();
   } else {
     restaurarRascunho();
