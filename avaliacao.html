@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avaliação — Imersão Mulheres Renovadas para Transformar</title>
+<meta name="description" content="Conte como foi para você a Imersão Mulheres Renovadas para Transformar.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=29">
+<style>
+/* ── Estilos só desta página ───────────────────────────────────────────
+   Ficam aqui, e não no styles.css compartilhado, porque nada disso é
+   reaproveitado por outra tela — e no dia do evento mexer no CSS comum
+   significaria arriscar o formulário de inscrição e os dois painéis. */
+
+.capa-avaliacao { text-align: center; }
+.capa-avaliacao h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 8.5vw, 2.9rem);
+  line-height: 1.1;
+  color: var(--purple-deep);
+  margin-bottom: 10px;
+}
+.capa-avaliacao h1 em {
+  display: block;
+  font-style: italic;
+  color: var(--lavender);
+}
+.capa-avaliacao .convite {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 30rem;
+  margin: 0 auto;
+}
+.tempo-estimado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 6px 15px;
+  border-radius: 999px;
+  background: rgba(123, 94, 167, 0.09);
+  color: var(--lavender);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Estrelas ──────────────────────────────────────────────────────────
+   Botões, não radios: o toque precisa acertar em cheio num celular
+   segurado com uma mão só, então cada alvo tem no mínimo 44px (o mínimo
+   recomendado para toque) mesmo quando o desenho parece menor. */
+.estrelas {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+.estrela {
+  -webkit-tap-highlight-color: transparent;
+  background: none;
+  border: 0;
+  padding: 6px 3px;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--hairline);
+  transition: transform 0.18s var(--ease), color 0.18s var(--ease);
+}
+.estrela svg { display: block; width: 100%; height: auto; pointer-events: none; }
+.estrela.acesa { color: var(--gold); }
+.estrela:active { transform: scale(0.88); }
+.estrela:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; border-radius: 8px; }
+
+/* Nota geral: o coração da pesquisa, então ganha o tamanho todo. */
+.nota-geral { text-align: center; }
+.nota-geral .estrelas { gap: 4px; margin: 4px 0 2px; }
+.nota-geral .estrela { min-width: 17vw; max-width: 62px; padding: 8px 4px; }
+.nota-geral .estrela.acesa { filter: drop-shadow(0 3px 8px rgba(201, 169, 110, 0.45)); }
+.legenda-nota {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--lavender);
+  min-height: 1.7em;      /* reserva a linha: sem isso a página "pula" ao escolher */
+  transition: opacity 0.25s var(--ease);
+}
+.legenda-nota:empty::before {
+  content: 'Toque nas estrelas';
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+}
+
+/* ── Aspectos: rótulo à esquerda, estrelas à direita ───────────────── */
+.aspecto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.aspecto:last-child { border-bottom: 0; }
+.aspecto-nome {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.3;
+}
+.aspecto-nome small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+.aspecto .estrelas { flex: none; }
+.aspecto .estrela { min-width: 34px; min-height: 44px; padding: 4px 2px; }
+.aspecto .estrela svg { width: 26px; }
+@media (max-width: 360px) {
+  .aspecto { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .aspecto .estrelas { align-self: center; }
+}
+
+/* ── Tela de agradecimento ─────────────────────────────────────────── */
+.obrigada { text-align: center; padding: clamp(1.8rem, 6vw, 3rem) clamp(1.2rem, 5vw, 2.4rem); }
+.obrigada .coracao {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 16px;
+  color: var(--gold);
+  animation: pulsar 2.6s var(--ease) infinite;
+}
+.obrigada .coracao svg { width: 100%; height: 100%; display: block; }
+@keyframes pulsar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+.obrigada h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.7rem, 7vw, 2.3rem);
+  color: var(--purple-deep);
+  margin-bottom: 12px;
+}
+.obrigada p { color: var(--text-muted); line-height: 1.7; }
+.obrigada p + p { margin-top: 10px; }
+.obrigada .versiculo {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--lavender);
+  border-left: 2px solid var(--gold);
+  padding-left: 14px;
+  margin: 20px auto 0;
+  max-width: 26rem;
+  text-align: left;
+}
+
+/* Contador de caracteres discreto, só quando a pessoa está perto do limite. */
+.contador-texto {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: 3px;
+}
+
+.enviando-aviso {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+</style>
+</head>
+<body>
+
+<div class="atmosfera" aria-hidden="true">
+  <span class="brilho brilho--1"></span>
+  <span class="brilho brilho--2"></span>
+  <span class="brilho brilho--3"></span>
+</div>
+<img class="borboleta-fundo borboleta-fundo--1" src="img/borboleta-3.png" alt="" aria-hidden="true">
+<img class="borboleta-fundo borboleta-fundo--2" src="img/borboleta-3.png" alt="" aria-hidden="true">
+<span class="faisca faisca--1" aria-hidden="true"></span>
+<span class="faisca faisca--2" aria-hidden="true"></span>
+<span class="faisca faisca--3" aria-hidden="true"></span>
+
+<div class="folha">
+
+  <header class="capa capa-avaliacao">
+    <img class="borboleta entra entra--1" src="img/borboleta-3.png" alt="" aria-hidden="true">
+    <div class="rotulo entra entra--1">Imersão Mulheres Renovadas para Transformar</div>
+    <h1 class="entra entra--desfocado entra--2">Como foi <em>para você?</em></h1>
+    <div class="filete entra entra--2"></div>
+    <p class="convite entra entra--3">Sua opinião nos ajuda a cuidar melhor de cada mulher que chega até aqui. Responda com sinceridade — <strong>é anônimo</strong>, a não ser que você queira deixar seu nome no final.</p>
+    <span class="tempo-estimado entra entra--3">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      leva menos de 2 minutos
+    </span>
+  </header>
+
+  <div class="miolo">
+
+    <form id="form-avaliacao" novalidate>
+
+      <!-- ── Nota geral ─────────────────────────────────────── -->
+      <section class="secao vidro revela nota-geral">
+        <div class="secao-cabeca" style="align-items:center;padding-right:0;">
+          <h2 style="text-align:center;">A imersão como um todo</h2>
+        </div>
+        <div class="estrelas" id="estrelas-notaGeral" role="radiogroup" aria-label="Nota geral da imersão"></div>
+        <div class="legenda-nota" id="legenda-nota" aria-live="polite"></div>
+      </section>
+
+      <!-- ── Aspectos ───────────────────────────────────────── -->
+      <section class="secao vidro revela">
+        <span class="secao-fantasma" aria-hidden="true">★</span>
+        <div class="secao-cabeca">
+          <span class="secao-rotulo">Sobre o dia</span>
+          <h2>O que você achou de cada parte?</h2>
+        </div>
+        <div id="lista-aspectos"></div>
+      </section>
+
+      <!-- ── Perguntas abertas ──────────────────────────────── -->
+      <section class="secao vidro revela">
+        <span class="secao-fantasma" aria-hidden="true">♡</span>
+        <div class="secao-cabeca">
+          <span class="secao-rotulo">Seu coração</span>
+          <h2>Conte pra gente</h2>
+        </div>
+        <div class="campos">
+          <div class="campo">
+            <label for="maisTocou">O que mais tocou o seu coração hoje?</label>
+            <textarea id="maisTocou" name="maisTocou" rows="3" maxlength="1500" placeholder="Um momento, uma palavra, uma oração..."></textarea>
+            <div class="contador-texto" data-para="maisTocou"></div>
+          </div>
+          <div class="campo">
+            <label for="melhorar">O que podemos melhorar nas próximas imersões?</label>
+            <textarea id="melhorar" name="melhorar" rows="3" maxlength="1500" placeholder="Pode falar com sinceridade — é assim que a gente melhora."></textarea>
+            <div class="contador-texto" data-para="melhorar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Próximos passos ────────────────────────────────── -->
+      <section class="secao vidro revela">
+        <span class="secao-fantasma" aria-hidden="true">→</span>
+        <div class="secao-cabeca">
+          <span class="secao-rotulo">Daqui pra frente</span>
+          <h2>E depois de hoje?</h2>
+        </div>
+        <div class="campos">
+          <div class="campo">
+            <span class="rotulo-campo">Você indicaria esta imersão para uma amiga?</span>
+            <div class="escolhas" id="escolhas-indicaria"></div>
+          </div>
+          <div class="campo">
+            <span class="rotulo-campo">Gostaria de participar dos próximos encontros?</span>
+            <div class="escolhas" id="escolhas-proximosEncontros"></div>
+          </div>
+          <div class="campo">
+            <label for="recado">Quer deixar um recado para a equipe? <span class="opcional">(opcional)</span></label>
+            <textarea id="recado" name="recado" rows="2" maxlength="1500" placeholder="Uma palavra de carinho, um agradecimento, um pedido de oração..."></textarea>
+            <div class="contador-texto" data-para="recado"></div>
+          </div>
+          <div class="campo">
+            <label for="nome">Seu nome <span class="opcional">(opcional)</span></label>
+            <input type="text" id="nome" name="nome" maxlength="120" autocomplete="name" placeholder="Só se você quiser se identificar">
+          </div>
+        </div>
+      </section>
+
+      <div class="acao" style="padding-bottom:8px;">
+        <button type="submit" class="botao" id="botao-enviar">Enviar minha avaliação</button>
+        <div class="recado" id="recado-envio" role="status" aria-live="polite"></div>
+        <p class="enviando-aviso" id="aviso-rascunho">Suas respostas ficam salvas neste celular enquanto você preenche.</p>
+      </div>
+
+    </form>
+
+    <!-- ── Agradecimento ────────────────────────────────────── -->
+    <section class="vidro obrigada" id="bloco-obrigada" hidden>
+      <div class="coracao" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-9.6-9.2C.7 8.3 2.4 4.8 5.7 4.1c1.9-.4 3.9.4 5 2 1.1-1.6 3.1-2.4 5-2 3.3.7 5 4.2 3.3 7.7C19.5 16.1 12 21 12 21z"></path></svg>
+      </div>
+      <h2 id="titulo-obrigada">Obrigada por compartilhar!</h2>
+      <p id="texto-obrigada">Sua resposta chegou até nós. Cada palavra vai ser lida com carinho pela coordenação.</p>
+      <p class="versiculo">"E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor."<br><span style="font-size:0.85rem;font-style:normal;color:var(--text-muted);">Colossenses 3:23</span></p>
+      <div class="painel-acoes" style="margin-top:22px;">
+        <button type="button" class="botao-mini" id="botao-responder-outra">Responder de novo</button>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="rodape">
+    <strong>Ministério Rhema</strong> · Igreja Presbiteriana de Costa Rica<br>
+    Imersão Mulheres Renovadas para Transformar
+  </p>
+
+</div>
+
+<script src="config.js"></script>
+<script src="api.js?v=4"></script>
+<script src="animacoes.js?v=2"></script>
+<script>
+(function () {
+  var form = document.getElementById('form-avaliacao');
+  var botao = document.getElementById('botao-enviar');
+  var recado = document.getElementById('recado-envio');
+
+  /* ── O que se pergunta ──────────────────────────────────────────────
+     Em dados, não em HTML repetido: as estrelas de cada aspecto são
+     idênticas, e mudar uma pergunta antes do evento tem de ser mexer em
+     uma linha, não em vinte. */
+  var ASPECTOS = [
+    { campo: 'acolhimento',  nome: 'Acolhimento',   sub: 'recepção, cuidado com você' },
+    { campo: 'mensagem',     nome: 'A mensagem',    sub: 'o conteúdo, a palestrante' },
+    { campo: 'organizacao',  nome: 'Organização',   sub: 'horários, dinâmica do dia' },
+    { campo: 'local',        nome: 'Local',         sub: 'espaço, conforto, estrutura' },
+    { campo: 'alimentacao',  nome: 'Alimentação',   sub: 'lanches e intervalos' }
+  ];
+  var LEGENDAS = ['', 'Não foi o que eu esperava', 'Poderia ser melhor', 'Foi bom', 'Muito bom!', 'Foi maravilhoso!'];
+  var ESCOLHAS = {
+    indicaria: ['Com certeza', 'Talvez', 'Não'],
+    proximosEncontros: ['Sim', 'Talvez', 'Não']
+  };
+
+  /* Estado das respostas — a única fonte de verdade da tela. */
+  var respostas = {
+    notaGeral: 0, acolhimento: 0, mensagem: 0, organizacao: 0, local: 0, alimentacao: 0,
+    indicaria: '', proximosEncontros: ''
+  };
+
+  var CHAVE_RASCUNHO = 'avaliacaoRascunho';
+  var CHAVE_ENVIADA = 'avaliacaoEnviada';
+
+  /* ── localStorage sempre entre try/catch ────────────────────────────
+     Navegador em aba anônima, ou com dados de site bloqueados, ESTOURA ao
+     acessar localStorage — e uma pesquisa que quebra por causa disso, no
+     meio do telão, seria o pior desfecho possível. Sem armazenamento a
+     página funciona igual, só não guarda rascunho. */
+  function ler(chave) {
+    try { return localStorage.getItem(chave); } catch (e) { return null; }
+  }
+  function gravar(chave, valor) {
+    try { localStorage.setItem(chave, valor); } catch (e) { /* segue sem rascunho */ }
+  }
+  function apagar(chave) {
+    try { localStorage.removeItem(chave); } catch (e) { /* nada a fazer */ }
+  }
+
+  function svgEstrela() {
+    return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+      '<path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.4-5.7-3.4-5.7 3.4 1.5-6.4-5-4.3 6.6-.6z"/></svg>';
+  }
+
+  /** Pinta as estrelas acesas de um grupo e atualiza o aria dos botões. */
+  function pintar(container, valor) {
+    Array.prototype.forEach.call(container.querySelectorAll('.estrela'), function (b) {
+      var aceso = Number(b.getAttribute('data-valor')) <= valor;
+      b.classList.toggle('acesa', aceso);
+      b.setAttribute('aria-checked', Number(b.getAttribute('data-valor')) === valor ? 'true' : 'false');
+    });
+  }
+
+  function montarEstrelas(container, campo, aoEscolher) {
+    for (var i = 1; i <= 5; i++) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'estrela';
+      b.setAttribute('data-valor', i);
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', 'false');
+      b.setAttribute('aria-label', i + (i === 1 ? ' estrela' : ' estrelas'));
+      b.innerHTML = svgEstrela();
+      b.addEventListener('click', function () {
+        var valor = Number(this.getAttribute('data-valor'));
+        // Tocar de novo na mesma estrela desmarca: dá para corrigir um toque
+        // acidental sem precisar recarregar a página.
+        respostas[campo] = (respostas[campo] === valor) ? 0 : valor;
+        pintar(container, respostas[campo]);
+        if (aoEscolher) aoEscolher(respostas[campo]);
+        salvarRascunho();
+      });
+      container.appendChild(b);
+    }
+  }
+
+  var legenda = document.getElementById('legenda-nota');
+  montarEstrelas(document.getElementById('estrelas-notaGeral'), 'notaGeral', function (valor) {
+    legenda.textContent = LEGENDAS[valor] || '';
+  });
+
+  var listaAspectos = document.getElementById('lista-aspectos');
+  ASPECTOS.forEach(function (aspecto) {
+    var linha = document.createElement('div');
+    linha.className = 'aspecto';
+
+    var rotulo = document.createElement('div');
+    rotulo.className = 'aspecto-nome';
+    rotulo.textContent = aspecto.nome;
+    var sub = document.createElement('small');
+    sub.textContent = aspecto.sub;
+    rotulo.appendChild(sub);
+
+    var grupo = document.createElement('div');
+    grupo.className = 'estrelas';
+    grupo.setAttribute('role', 'radiogroup');
+    grupo.setAttribute('aria-label', aspecto.nome);
+    grupo.id = 'estrelas-' + aspecto.campo;
+    montarEstrelas(grupo, aspecto.campo, null);
+
+    linha.appendChild(rotulo);
+    linha.appendChild(grupo);
+    listaAspectos.appendChild(linha);
+  });
+
+  /* Sim/Talvez/Não com o mesmo visual dos radios do formulário de inscrição. */
+  Object.keys(ESCOLHAS).forEach(function (campo) {
+    var container = document.getElementById('escolhas-' + campo);
+    ESCOLHAS[campo].forEach(function (opcao) {
+      var label = document.createElement('label');
+      label.className = 'escolha';
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = campo;
+      input.value = opcao;
+      var marca = document.createElement('span');
+      marca.className = 'marca';
+      label.appendChild(input);
+      label.appendChild(marca);
+      label.appendChild(document.createTextNode(opcao));
+      input.addEventListener('change', function () {
+        respostas[campo] = opcao;
+        Array.prototype.forEach.call(container.querySelectorAll('.escolha'), function (el) {
+          el.classList.toggle('marcada', el === label);
+        });
+        salvarRascunho();
+      });
+      container.appendChild(label);
+    });
+  });
+
+  /* Contador só aparece perto do limite — antes disso é ruído na tela. */
+  Array.prototype.forEach.call(document.querySelectorAll('.contador-texto'), function (contador) {
+    var campo = document.getElementById(contador.getAttribute('data-para'));
+    var limite = Number(campo.getAttribute('maxlength'));
+    campo.addEventListener('input', function () {
+      var restam = limite - campo.value.length;
+      contador.textContent = restam <= 150 ? restam + ' caracteres restantes' : '';
+      salvarRascunho();
+    });
+  });
+
+  var CAMPOS_TEXTO = ['maisTocou', 'melhorar', 'recado', 'nome'];
+
+  function salvarRascunho() {
+    var rascunho = { respostas: respostas, textos: {} };
+    CAMPOS_TEXTO.forEach(function (id) { rascunho.textos[id] = document.getElementById(id).value; });
+    gravar(CHAVE_RASCUNHO, JSON.stringify(rascunho));
+  }
+
+  function restaurarRascunho() {
+    var bruto = ler(CHAVE_RASCUNHO);
+    if (!bruto) return;
+    var rascunho;
+    try { rascunho = JSON.parse(bruto); } catch (e) { return; }
+    if (!rascunho || !rascunho.respostas) return;
+
+    Object.keys(respostas).forEach(function (campo) {
+      if (rascunho.respostas[campo] !== undefined) respostas[campo] = rascunho.respostas[campo];
+    });
+    CAMPOS_TEXTO.forEach(function (id) {
+      if (rascunho.textos && rascunho.textos[id]) document.getElementById(id).value = rascunho.textos[id];
+    });
+
+    pintar(document.getElementById('estrelas-notaGeral'), respostas.notaGeral);
+    legenda.textContent = LEGENDAS[respostas.notaGeral] || '';
+    ASPECTOS.forEach(function (a) {
+      pintar(document.getElementById('estrelas-' + a.campo), respostas[a.campo]);
+    });
+    Object.keys(ESCOLHAS).forEach(function (campo) {
+      var escolhido = respostas[campo];
+      if (!escolhido) return;
+      var input = document.querySelector('#escolhas-' + campo + ' input[value="' + escolhido + '"]');
+      if (input) { input.checked = true; input.closest('.escolha').classList.add('marcada'); }
+    });
+  }
+
+  /**
+   * Identificador desta resposta. Nasce uma vez e é o MESMO numa retentativa
+   * por falha de rede — assim, se a primeira tentativa gravou e só a resposta
+   * se perdeu, dá para reconhecer a linha repetida na planilha depois.
+   */
+  function novoId() {
+    return 'AV' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function mostrarObrigada() {
+    form.hidden = true;
+    document.getElementById('bloco-obrigada').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('botao-responder-outra').addEventListener('click', function () {
+    /* O celular pode ser passado para outra pessoa — é o caso real de duas
+       amigas dividindo um aparelho. Limpa tudo e começa do zero. */
+    apagar(CHAVE_ENVIADA);
+    apagar(CHAVE_RASCUNHO);
+    window.location.reload();
+  });
+
+  /* Quem já enviou neste aparelho vê o agradecimento direto, com a porta de
+     saída acima para o caso de outra pessoa querer responder. */
+  if (ler(CHAVE_ENVIADA)) {
+    document.getElementById('titulo-obrigada').textContent = 'Você já respondeu!';
+    document.getElementById('texto-obrigada').textContent =
+      'Sua avaliação já chegou até nós — muito obrigada. Se este celular for de mais alguém que ainda quer responder, use o botão abaixo.';
+    mostrarObrigada();
+  } else {
+    restaurarRascunho();
+  }
+
+  form.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+
+    if (!respostas.notaGeral) {
+      recado.textContent = 'Toque nas estrelas lá em cima para dar sua nota geral.';
+      recado.className = 'recado erro';
+      document.getElementById('estrelas-notaGeral').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    botao.disabled = true;
+    botao.textContent = 'Enviando...';
+    recado.textContent = '';
+    recado.className = 'recado';
+
+    var dados = {
+      respostaId: novoId(),
+      notaGeral: respostas.notaGeral,
+      acolhimento: respostas.acolhimento,
+      mensagem: respostas.mensagem,
+      organizacao: respostas.organizacao,
+      local: respostas.local,
+      alimentacao: respostas.alimentacao,
+      indicaria: respostas.indicaria,
+      proximosEncontros: respostas.proximosEncontros,
+      maisTocou: document.getElementById('maisTocou').value,
+      melhorar: document.getElementById('melhorar').value,
+      recado: document.getElementById('recado').value,
+      nome: document.getElementById('nome').value
+    };
+
+    /* Retentativa com espera crescente e sorteada. Dezenas de celulares
+       respondem no mesmo minuto, quando a palestrante pede: se todos que
+       falharem tentarem de novo no mesmo instante, batem juntos outra vez. O
+       sorteio espalha as retentativas no tempo. */
+    var TENTATIVAS = 4;
+
+    function enviar(restantes, esperaMs) {
+      return apiPost('registrarAvaliacao', { dados: dados }).catch(function (erro) {
+        if (restantes <= 1) throw erro;
+        recado.textContent = 'A conexão oscilou. Tentando de novo...';
+        recado.className = 'recado';
+        var espera = esperaMs + Math.random() * 1500;
+        return new Promise(function (r) { setTimeout(r, espera); })
+          .then(function () { return enviar(restantes - 1, esperaMs * 2); });
+      });
+    }
+
+    enviar(TENTATIVAS, 1200)
+      .then(function (resposta) {
+        if (resposta && resposta.ok) {
+          gravar(CHAVE_ENVIADA, '1');
+          apagar(CHAVE_RASCUNHO);
+          mostrarObrigada();
+          return;
+        }
+        recado.textContent = (resposta && resposta.mensagem) || 'Não foi possível enviar. Tente novamente.';
+        recado.className = 'recado erro';
+        botao.disabled = false;
+        botao.textContent = 'Enviar minha avaliação';
+      })
+      .catch(function () {
+        /* O rascunho continua salvo: a pessoa pode tentar de novo sem
+           reescrever nada, mesmo depois de fechar a página. */
+        recado.textContent = 'Não conseguimos enviar agora — o sinal aqui deve estar concorrido. Suas respostas estão salvas: toque em enviar de novo em alguns instantes.';
+        recado.className = 'recado erro';
+        botao.disabled = false;
+        botao.textContent = 'Tentar enviar de novo';
+      });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>QR da avaliação — projetar no telão</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+/* ── Página de projeção ────────────────────────────────────────────────
+   Desenhada para um telão visto da última fileira, não para um celular:
+   fundo escuro (projetor lava cores claras), texto grande, e tudo cabendo
+   em UMA tela sem rolagem — usando unidades de viewport, então a mesma
+   página serve num telão 16:9 e numa TV 4:3.
+
+   Não carrega styles.css de propósito: aqui nada é reaproveitado das
+   telas do site, e uma folha de estilo a menos é uma coisa a menos que
+   pode falhar de carregar na hora H. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3vh 4vw;
+  font-family: 'Lato', -apple-system, 'Segoe UI', sans-serif;
+  color: #F3ECFA;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(123, 94, 167, 0.55), transparent 55%),
+    radial-gradient(circle at 82% 88%, rgba(201, 169, 110, 0.30), transparent 52%),
+    #2A1B45;
+}
+
+.quadro {
+  display: flex;
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  max-width: 1500px;
+  width: 100%;
+}
+
+/* Em telas mais altas que largas (TV em pé, tablet), empilha. */
+@media (max-aspect-ratio: 1/1) {
+  .quadro { flex-direction: column; gap: 4vh; text-align: center; }
+  .texto { align-items: center; }
+}
+
+.texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.selo {
+  font-size: clamp(0.75rem, 1.35vw, 1.15rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #C9A96E;
+  font-weight: 700;
+  margin-bottom: 2vh;
+}
+
+h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.4rem, 6.4vw, 6rem);
+  line-height: 1.02;
+  color: #FFFFFF;
+  margin-bottom: 0.35em;
+}
+h1 em { display: block; font-style: italic; color: #C4ADE0; }
+
+.filete {
+  width: 5.5rem;
+  height: 3px;
+  background: linear-gradient(90deg, #C9A96E, rgba(201, 169, 110, 0));
+  margin-bottom: 3vh;
+}
+@media (max-aspect-ratio: 1/1) { .filete { margin-left: auto; margin-right: auto; } }
+
+.passos {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6vh;
+  font-size: clamp(1rem, 1.9vw, 1.7rem);
+  line-height: 1.4;
+  color: #E4D9F2;
+}
+.passos li { display: flex; align-items: center; gap: 0.7em; }
+.passos .num {
+  flex: none;
+  width: 1.9em;
+  height: 1.9em;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid rgba(201, 169, 110, 0.55);
+  color: #C9A96E;
+  font-weight: 700;
+  font-size: 0.78em;
+}
+
+.endereco {
+  margin-top: 3.2vh;
+  font-size: clamp(0.85rem, 1.5vw, 1.3rem);
+  color: #B49FD0;
+  line-height: 1.5;
+}
+.endereco strong {
+  display: block;
+  color: #FFFFFF;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  word-break: break-all;
+}
+
+/* ── O QR ─────────────────────────────────────────────────────────────
+   Cartão branco: um QR escuro sobre fundo escuro não é lido por câmera
+   nenhuma, e a moldura clara também dá a margem de silêncio que o padrão
+   exige em volta do código. */
+.cartao-qr {
+  flex: none;
+  background: #FFFFFF;
+  border-radius: 1.6vmin;
+  padding: 2.2vmin;
+  box-shadow: 0 2.4vmin 6vmin rgba(0, 0, 0, 0.45);
+  line-height: 0;
+}
+.cartao-qr img {
+  display: block;
+  width: min(46vh, 40vw, 520px);
+  height: auto;
+  image-rendering: pixelated; /* mantém os quadradinhos nítidos ao ampliar */
+}
+@media (max-aspect-ratio: 1/1) {
+  .cartao-qr img { width: min(52vh, 78vw); }
+}
+
+.aponte {
+  margin-top: 1.6vh;
+  text-align: center;
+  font-size: clamp(0.8rem, 1.4vw, 1.15rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #C9A96E;
+}
+</style>
+</head>
+<body>
+
+  <div class="quadro">
+
+    <div class="texto">
+      <div class="selo">Imersão Mulheres Renovadas para Transformar</div>
+      <h1>Conte pra gente<em>como foi para você</em></h1>
+      <div class="filete"></div>
+
+      <ol class="passos">
+        <li><span class="num">1</span> Abra a câmera do seu celular</li>
+        <li><span class="num">2</span> Aponte para o código ao lado</li>
+        <li><span class="num">3</span> Toque no link que aparecer</li>
+      </ol>
+
+      <p class="endereco">
+        Se preferir, digite no navegador:
+        <strong>elizandra-tfrm.github.io/imersao-igreja/avaliacao.html</strong>
+      </p>
+    </div>
+
+    <div>
+      <div class="cartao-qr">
+        <img src="img/qr-avaliacao.png" alt="QR code para a avaliação da imersão">
+      </div>
+      <div class="aponte">É rápido — menos de 2 minutos</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
