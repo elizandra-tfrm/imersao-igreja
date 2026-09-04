@@ -10,6 +10,134 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=29">
+<style>
+/* ── Aba "Avaliações" ──────────────────────────────────────────────────
+   Fica aqui, e não no styles.css compartilhado, porque nada disso é usado
+   por outra tela — e mexer no CSS comum arriscaria o formulário público e
+   o painel do sistema antigo.
+
+   Regra de cor seguida à risca: as barras são UMA série só, então usam UMA
+   cor (lavanda) — nada de pintar cada barra de um tom conforme o valor, que
+   seria codificar duas vezes a mesma informação. O dourado das estrelas é
+   enfeite ao lado do número, nunca a barra em si: sobre o creme ele tem
+   contraste 2.18:1, abaixo do mínimo para carregar dado sozinho. Por isso
+   toda barra também traz o número escrito. */
+
+.av-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.av-topo p { font-size: 0.9rem; color: var(--text-muted); }
+
+.av-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.av-tile {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.av-tile .av-rotulo {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.av-tile .av-numero {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  line-height: 1.05;
+  color: var(--purple-deep);
+  font-weight: 500;
+}
+.av-tile .av-nota { font-size: 0.8rem; color: var(--text-muted); }
+
+.av-blocos { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 22px; }
+.av-bloco {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: 20px;
+}
+.av-bloco h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--purple-deep);
+  margin-bottom: 4px;
+}
+.av-bloco .av-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; }
+
+/* ── Barras ────────────────────────────────────────────────────────────
+   Marca fina (10px, teto de 24px), ponta arredondada em 4px só do lado que
+   cresce e reta na base, trilho de um passo acima da superfície. */
+.av-barra { display: grid; grid-template-columns: 8.5rem 1fr auto; align-items: center; gap: 10px; padding: 5px 0; }
+.av-barra + .av-barra { border-top: 1px solid var(--hairline); }
+.av-barra-rotulo { font-size: 0.85rem; color: var(--text); line-height: 1.25; }
+.av-barra-rotulo small { display: block; font-size: 0.7rem; color: var(--text-muted); }
+.av-trilho { background: #F0EAE0; border-radius: 0 5px 5px 0; height: 10px; overflow: hidden; }
+.av-preenche {
+  height: 100%;
+  background: var(--lavender);
+  border-radius: 0 4px 4px 0; /* reta na base, arredondada na ponta que cresce */
+  min-width: 2px;
+  transition: width 0.7s var(--ease);
+}
+.av-barra-valor { font-size: 0.85rem; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.av-barra-valor span { color: var(--text-muted); font-size: 0.76rem; }
+
+/* Estrelas: enfeite ao lado do número, nunca sozinhas carregando o dado. */
+.av-estrelas { display: inline-flex; gap: 1px; vertical-align: middle; }
+.av-estrelas svg { width: 15px; height: 15px; display: block; }
+.av-estrelas .cheia { color: var(--gold); }
+.av-estrelas .vazia { color: #E6DCCB; }
+
+/* ── Comentários ───────────────────────────────────────────────────── */
+.av-comentarios { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.av-comentario {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--lavender-lt);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.av-comentario-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.av-comentario-quem { font-size: 0.85rem; font-weight: 700; color: var(--purple-deep); }
+.av-comentario-quando { font-size: 0.72rem; color: var(--text-muted); }
+.av-resposta + .av-resposta { margin-top: 9px; }
+.av-resposta-rotulo {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lavender);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.av-resposta p { font-size: 0.86rem; line-height: 1.5; color: var(--text); white-space: pre-line; }
+
+.av-vazio { text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 0.95rem; }
+
+/* ── Abas ──────────────────────────────────────────────────────────── */
+.admin-abas { display: flex; gap: 4px; margin: 0 0 18px; border-bottom: 1px solid var(--hairline); }
+.admin-abas button {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.admin-abas button:hover { color: var(--lavender); }
+.admin-abas button[aria-selected="true"] { color: var(--purple-deep); font-weight: 700; border-bottom-color: var(--lavender); }
+</style>
 </head>
 <body class="admin">
 
@@ -60,6 +188,13 @@
         <button type="button" class="botao-mini botao-mini--sair" id="botao-sair">Sair</button>
       </div>
     </div>
+
+    <div class="admin-abas" role="tablist">
+      <button type="button" id="aba-btn-inscricoes" role="tab" aria-selected="true">Inscrições</button>
+      <button type="button" id="aba-btn-avaliacoes" role="tab" aria-selected="false">Avaliações da imersão</button>
+    </div>
+
+    <div id="aba-inscricoes">
 
     <!-- Os três primeiros são botões: clicar filtra a tabela naquele grupo.
          "Arrecadado" é só leitura — não existe filtro "por dinheiro". -->
@@ -118,6 +253,63 @@
       <span class="rodape-aviso" id="aviso-alteracoes" hidden></span>
       <button type="button" class="botao-mini botao-salvar-tudo" id="botao-salvar-tudo" disabled>Salvar alterações</button>
     </div>
+
+    </div><!-- /aba-inscricoes -->
+
+    <!-- ── Aba: resultado da avaliação da imersão ─────────────────── -->
+    <div id="aba-avaliacoes" hidden>
+      <div class="av-vazio" id="av-carregando">Carregando as avaliações...</div>
+
+      <div id="av-conteudo" hidden>
+        <div class="av-topo">
+          <p id="av-resumo-linha"></p>
+          <button type="button" class="botao-mini" id="av-atualizar">Atualizar</button>
+        </div>
+
+        <div class="av-tiles">
+          <div class="av-tile">
+            <span class="av-rotulo">Responderam</span>
+            <strong class="av-numero" id="av-total">—</strong>
+            <span class="av-nota" id="av-total-nota"></span>
+          </div>
+          <div class="av-tile">
+            <span class="av-rotulo">Nota geral</span>
+            <strong class="av-numero" id="av-media">—</strong>
+            <span class="av-nota"><span class="av-estrelas" id="av-media-estrelas"></span></span>
+          </div>
+          <div class="av-tile">
+            <span class="av-rotulo">Indicariam a uma amiga</span>
+            <strong class="av-numero" id="av-indicaria">—</strong>
+            <span class="av-nota" id="av-indicaria-nota"></span>
+          </div>
+          <div class="av-tile">
+            <span class="av-rotulo">Querem os próximos</span>
+            <strong class="av-numero" id="av-proximos">—</strong>
+            <span class="av-nota" id="av-proximos-nota"></span>
+          </div>
+        </div>
+
+        <div class="av-blocos">
+          <section class="av-bloco">
+            <h2>Distribuição das notas</h2>
+            <p class="av-sub">Quantas deram cada nota geral</p>
+            <div id="av-distribuicao"></div>
+          </section>
+          <section class="av-bloco">
+            <h2>Média por aspecto</h2>
+            <p class="av-sub">De 1 a 5 estrelas</p>
+            <div id="av-aspectos"></div>
+          </section>
+        </div>
+
+        <section class="av-bloco">
+          <h2 id="av-titulo-comentarios">O que elas escreveram</h2>
+          <p class="av-sub">Mais recentes primeiro</p>
+          <div class="av-comentarios" id="av-comentarios"></div>
+        </section>
+      </div>
+    </div>
+
   </div>
 
 <script src="config.js"></script>
@@ -1023,6 +1215,282 @@
     marcarCardAtivo();
     aplicarFiltros();
   });
+
+  /* ================================================================== */
+  /* Aba "Avaliações da imersão"                                         */
+  /* ================================================================== */
+
+  var abaInscricoes = document.getElementById('aba-inscricoes');
+  var abaAvaliacoes = document.getElementById('aba-avaliacoes');
+  var btnAbaInscricoes = document.getElementById('aba-btn-inscricoes');
+  var btnAbaAvaliacoes = document.getElementById('aba-btn-avaliacoes');
+  var tituloPainel = document.querySelector('.admin-cabecalho h1');
+  var acoesTopo = document.querySelector('.admin-acoes-topo');
+  var avCarregado = false;
+
+  /* Botões que só fazem sentido na lista de inscrições. "Sair" fica sempre. */
+  var SO_INSCRICOES = [campoBusca, filtroSituacao, botaoExcel, botaoFichas];
+
+  function trocarAba(qual) {
+    var emAvaliacoes = qual === 'avaliacoes';
+
+    abaInscricoes.hidden = emAvaliacoes;
+    abaAvaliacoes.hidden = !emAvaliacoes;
+    btnAbaInscricoes.setAttribute('aria-selected', emAvaliacoes ? 'false' : 'true');
+    btnAbaAvaliacoes.setAttribute('aria-selected', emAvaliacoes ? 'true' : 'false');
+
+    tituloPainel.textContent = emAvaliacoes ? 'Avaliações da imersão' : 'Inscrições';
+    contador.hidden = emAvaliacoes;
+    SO_INSCRICOES.forEach(function (el) { if (el) el.hidden = emAvaliacoes; });
+
+    // Só busca quando a coordenação realmente abre a aba: ler a planilha
+    // inteira é caro, e a maior parte das visitas ao painel é para pagamentos.
+    if (emAvaliacoes && !avCarregado) carregarAvaliacoes();
+  }
+
+  btnAbaInscricoes.addEventListener('click', function () { trocarAba('inscricoes'); });
+  btnAbaAvaliacoes.addEventListener('click', function () { trocarAba('avaliacoes'); });
+  document.getElementById('av-atualizar').addEventListener('click', carregarAvaliacoes);
+
+  /** Cinco estrelas, as cheias até `nota`. Enfeite ao lado do número — o valor
+      escrito é que informa, porque o dourado sozinho não tem contraste. */
+  function estrelasDe(nota) {
+    var caixa = document.createElement('span');
+    caixa.className = 'av-estrelas';
+    caixa.setAttribute('aria-hidden', 'true'); // o número ao lado já diz tudo
+    for (var i = 1; i <= 5; i++) {
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('fill', 'currentColor');
+      svg.setAttribute('class', i <= Math.round(nota) ? 'cheia' : 'vazia');
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.4-5.7-3.4-5.7 3.4 1.5-6.4-5-4.3 6.6-.6z');
+      svg.appendChild(path);
+      caixa.appendChild(svg);
+    }
+    return caixa;
+  }
+
+  /**
+   * Uma barra: rótulo, trilho e o valor escrito. Uma cor só para todas —
+   * é uma série só, e pintar cada uma conforme o valor repetiria em cor o
+   * que o comprimento já diz.
+   */
+  function montarBarra(rotulo, sub, valor, maximo, textoValor, textoMiudo, dica) {
+    var linha = document.createElement('div');
+    linha.className = 'av-barra';
+    if (dica) linha.title = dica;
+
+    var lado = document.createElement('div');
+    lado.className = 'av-barra-rotulo';
+    lado.textContent = rotulo;
+    if (sub) {
+      var pequeno = document.createElement('small');
+      pequeno.textContent = sub;
+      lado.appendChild(pequeno);
+    }
+
+    var trilho = document.createElement('div');
+    trilho.className = 'av-trilho';
+    var preenche = document.createElement('div');
+    preenche.className = 'av-preenche';
+    preenche.style.width = (maximo > 0 ? Math.max(0, Math.min(100, (valor / maximo) * 100)) : 0) + '%';
+    // Zero é zero: sem isto o min-width do CSS deixava um risquinho de cor numa
+    // barra que vale nada, o que faz parecer que alguém deu aquela nota.
+    if (!valor) preenche.style.minWidth = '0';
+    trilho.appendChild(preenche);
+
+    var val = document.createElement('div');
+    val.className = 'av-barra-valor';
+    val.textContent = textoValor;
+    if (textoMiudo) {
+      var mini = document.createElement('span');
+      mini.textContent = ' ' + textoMiudo;
+      val.appendChild(mini);
+    }
+
+    linha.appendChild(lado);
+    linha.appendChild(trilho);
+    linha.appendChild(val);
+    return linha;
+  }
+
+  function porcento(parte, total) {
+    return total > 0 ? Math.round((parte / total) * 100) : 0;
+  }
+
+  /** Soma os valores de um objeto tipo { 'Com certeza': 3, 'Talvez': 1 }. */
+  function somar(objeto) {
+    return Object.keys(objeto || {}).reduce(function (t, k) { return t + Number(objeto[k] || 0); }, 0);
+  }
+
+  var ASPECTOS_ROTULO = [
+    ['Acolhimento', 'recepção, cuidado'],
+    ['Mensagem', 'conteúdo, palestrante'],
+    ['Organizacao', 'horários, dinâmica'],
+    ['Local', 'espaço, estrutura'],
+    ['Alimentacao', 'lanches e intervalos']
+  ];
+  var NOME_BONITO = { Organizacao: 'Organização', Alimentacao: 'Alimentação', Mensagem: 'A mensagem' };
+
+  function carregarAvaliacoes() {
+    document.getElementById('av-carregando').hidden = false;
+    document.getElementById('av-carregando').textContent = 'Carregando as avaliações...';
+    document.getElementById('av-conteudo').hidden = true;
+
+    apiGetAdmin('adminResumoAvaliacoes')
+      .then(function (resp) {
+        if (!resp.ok) {
+          document.getElementById('av-carregando').textContent =
+            resp.mensagem || 'Não foi possível carregar as avaliações.';
+          return;
+        }
+        avCarregado = true;
+        desenharAvaliacoes(resp);
+      })
+      .catch(function (erro) {
+        if (erro && erro.message === 'sessao_invalida') return;
+        document.getElementById('av-carregando').textContent =
+          'Não conseguimos carregar as avaliações. Verifique a conexão e toque em Atualizar.';
+      });
+  }
+
+  function desenharAvaliacoes(d) {
+    var total = Number(d.total) || 0;
+
+    if (!total) {
+      document.getElementById('av-carregando').hidden = false;
+      document.getElementById('av-carregando').textContent =
+        'Ainda não há avaliações respondidas. Elas aparecem aqui assim que a primeira pessoa responder.';
+      document.getElementById('av-conteudo').hidden = true;
+      return;
+    }
+
+    document.getElementById('av-carregando').hidden = true;
+    document.getElementById('av-conteudo').hidden = false;
+
+    var medias = d.medias || {};
+    var porAspecto = d.respondentesPorAspecto || {};
+
+    /* ── Números do topo ── */
+    document.getElementById('av-total').textContent = total;
+    document.getElementById('av-total-nota').textContent = todasInscricoes.length
+      ? porcento(total, todasInscricoes.length) + '% das ' + todasInscricoes.length + ' inscritas'
+      : 'respostas recebidas';
+
+    var geral = Number(medias.Nota_Geral) || 0;
+    document.getElementById('av-media').textContent = geral ? geral.toFixed(1).replace('.', ',') : '—';
+    var caixaEstrelas = document.getElementById('av-media-estrelas');
+    caixaEstrelas.textContent = '';
+    caixaEstrelas.appendChild(estrelasDe(geral));
+
+    var ind = d.indicaria || {};
+    var indTotal = somar(ind);
+    document.getElementById('av-indicaria').textContent = indTotal ? porcento(ind['Com certeza'] || 0, indTotal) + '%' : '—';
+    document.getElementById('av-indicaria-nota').textContent = indTotal
+      ? 'disseram "com certeza" (' + indTotal + ' responderam)'
+      : 'ninguém respondeu ainda';
+
+    var prox = d.proximos || {};
+    var proxTotal = somar(prox);
+    document.getElementById('av-proximos').textContent = proxTotal ? porcento(prox['Sim'] || 0, proxTotal) + '%' : '—';
+    document.getElementById('av-proximos-nota').textContent = proxTotal
+      ? 'querem participar de novo (' + proxTotal + ' responderam)'
+      : 'ninguém respondeu ainda';
+
+    document.getElementById('av-resumo-linha').textContent =
+      total === 1 ? '1 pessoa respondeu a avaliação.' : total + ' pessoas responderam a avaliação.';
+
+    /* ── Distribuição das notas (5 estrelas primeiro) ── */
+    var dist = d.distribuicao || [0, 0, 0, 0, 0];
+    var maiorDist = Math.max.apply(null, dist.concat([1]));
+    var caixaDist = document.getElementById('av-distribuicao');
+    caixaDist.textContent = '';
+    for (var n = 5; n >= 1; n--) {
+      var qtd = Number(dist[n - 1]) || 0;
+      caixaDist.appendChild(montarBarra(
+        n + (n === 1 ? ' estrela' : ' estrelas'), null,
+        qtd, maiorDist,
+        String(qtd), '(' + porcento(qtd, total) + '%)',
+        n + (n === 1 ? ' estrela' : ' estrelas') + ': ' + qtd + ' de ' + total + ' respostas'
+      ));
+    }
+
+    /* ── Média por aspecto (escala fixa de 1 a 5) ── */
+    var caixaAsp = document.getElementById('av-aspectos');
+    caixaAsp.textContent = '';
+    ASPECTOS_ROTULO.forEach(function (par) {
+      var chave = par[0];
+      var media = Number(medias[chave]) || 0;
+      var quantas = Number(porAspecto[chave]) || 0;
+      caixaAsp.appendChild(montarBarra(
+        NOME_BONITO[chave] || chave, par[1],
+        media, 5,
+        media ? media.toFixed(1).replace('.', ',') : '—', 'de 5',
+        (NOME_BONITO[chave] || chave) + ': média ' + (media ? media.toFixed(1).replace('.', ',') : '—') +
+          ' de 5, com ' + quantas + (quantas === 1 ? ' resposta' : ' respostas')
+      ));
+    });
+
+    /* ── Comentários ──
+       Montados com textContent, nunca innerHTML: este texto vem do formulário
+       público, que qualquer pessoa preenche sem login. */
+    var comentarios = d.comentarios || [];
+    document.getElementById('av-titulo-comentarios').textContent =
+      comentarios.length ? 'O que elas escreveram (' + comentarios.length + ')' : 'O que elas escreveram';
+
+    var caixaCom = document.getElementById('av-comentarios');
+    caixaCom.textContent = '';
+
+    if (!comentarios.length) {
+      var vazio = document.createElement('p');
+      vazio.className = 'av-sub';
+      vazio.textContent = 'Ninguém escreveu nada ainda — só notas.';
+      caixaCom.appendChild(vazio);
+      return;
+    }
+
+    comentarios.forEach(function (c) {
+      var cartao = document.createElement('div');
+      cartao.className = 'av-comentario';
+
+      var topo = document.createElement('div');
+      topo.className = 'av-comentario-topo';
+
+      var quem = document.createElement('span');
+      quem.className = 'av-comentario-quem';
+      quem.textContent = c.nome || 'Anônima';
+      topo.appendChild(quem);
+
+      var direita = document.createElement('span');
+      direita.className = 'av-comentario-quando';
+      if (c.notaGeral) direita.appendChild(estrelasDe(c.notaGeral));
+      if (c.quando) {
+        var quando = document.createElement('span');
+        quando.textContent = ' ' + c.quando;
+        direita.appendChild(quando);
+      }
+      topo.appendChild(direita);
+      cartao.appendChild(topo);
+
+      [['Mais tocou', c.maisTocou], ['Podemos melhorar', c.melhorar], ['Recado', c.recado]]
+        .forEach(function (par) {
+          if (!par[1]) return;
+          var bloco = document.createElement('div');
+          bloco.className = 'av-resposta';
+          var rot = document.createElement('div');
+          rot.className = 'av-resposta-rotulo';
+          rot.textContent = par[0];
+          var txt = document.createElement('p');
+          txt.textContent = par[1];
+          bloco.appendChild(rot);
+          bloco.appendChild(txt);
+          cartao.appendChild(bloco);
+        });
+
+      caixaCom.appendChild(cartao);
+    });
+  }
 
   // Retoma a sessão se esta mesma aba já tinha um token válido guardado.
   token = tokenSalvo();
