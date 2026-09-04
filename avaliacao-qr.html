@@ -85,20 +85,32 @@ body {
 .ramo--3 { bottom: 9%; left: 4%;    --rot: -8deg;  animation-duration: 6.1s; animation-delay: -4.2s; }
 .ramo--4 { bottom: 8%; right: 3.5%; --rot: 12deg;  animation-duration: 7.9s; animation-delay: -1.1s; }
 
-/* Uma borboleta só, grande e em cor cheia — como na landing do livro, onde ela
-   pousa ao lado do título com ~100px e opacidade 1, não apagada no fundo.
-   Fica no alto à direita: é a faixa que continua livre em qualquer proporção
-   de tela, acima do cartão do QR (que é centralizado na vertical). */
+/* Uma borboleta só, em cor cheia, no meio do slide — entre o texto e o cartão
+   do QR. Ela já vem virada para a esquerda no arquivo (corpo à direita, asas
+   abrindo para a esquerda), então nada de espelhar.
+
+   TAMANHO É NITIDEZ AQUI: o arquivo tem 100x100 px de verdade. A landing do
+   livro a mostra a ~100px justamente por isso. Esticar para 168px (como estava)
+   borrava a imagem, e o brilho lavanda por cima piorava — some com ele, fica só
+   uma sombra escura discreta, que dá profundidade sem lavar o contorno.
+
+   Posicionada dentro do .quadro (e não na tela), para acompanhar o layout:
+   57% da largura cai na folga entre o texto e o cartão em qualquer tela larga. */
 .borboleta-fundo {
-  position: fixed;
+  position: absolute;
   z-index: 0;
-  top: 4vh;
-  right: 5vw;
-  width: clamp(86px, 9.5vw, 168px);
-  opacity: 0.95;
+  top: 8%;
+  left: 57%;
+  width: clamp(76px, 7vw, 104px);
+  opacity: 1;
   pointer-events: none;
-  filter: drop-shadow(0 6px 22px rgba(42, 27, 69, 0.55)) drop-shadow(0 2px 8px rgba(196, 173, 224, 0.4));
+  filter: drop-shadow(0 5px 16px rgba(20, 12, 34, 0.5));
   animation: derivar 24s ease-in-out infinite;
+}
+/* Empilhado (celular, tablet em pé): a folga do meio não existe, então ela sobe
+   para o canto de cima, longe do QR. */
+@media (max-aspect-ratio: 1/1) {
+  .borboleta-fundo { top: 0; left: auto; right: 2%; width: clamp(64px, 16vw, 96px); }
 }
 @keyframes derivar {
   0%, 100% { transform: translate(0, 0) rotate(-5deg); }
@@ -328,14 +340,14 @@ h1 em { display: block; font-style: italic; color: #C4ADE0; }
   <svg class="ramo ramo--3" viewBox="0 0 16 34" fill="none" aria-hidden="true"><line x1="8" y1="34" x2="8" y2="8" stroke="#C4ADE0" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="5" cy="26" rx="2.4" ry="3.6" fill="#D9C7EE" transform="rotate(-18 5 26)"/><ellipse cx="11" cy="23" rx="2.4" ry="3.6" fill="#C4ADE0" transform="rotate(18 11 23)"/><ellipse cx="5" cy="18" rx="2.1" ry="3.2" fill="#C4ADE0" transform="rotate(-14 5 18)"/><ellipse cx="11" cy="15" rx="2.1" ry="3.2" fill="#D9C7EE" transform="rotate(14 11 15)"/><ellipse cx="6" cy="11" rx="1.8" ry="2.8" fill="#B89FD4" transform="rotate(-10 6 11)"/><ellipse cx="10" cy="9" rx="1.8" ry="2.8" fill="#D9C7EE" transform="rotate(10 10 9)"/><circle cx="8" cy="6" r="1.6" fill="#E3D2AE" opacity="0.9"/></svg>
   <svg class="ramo ramo--4" viewBox="0 0 16 34" fill="none" aria-hidden="true"><line x1="8" y1="34" x2="8" y2="8" stroke="#C4ADE0" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="5" cy="26" rx="2.4" ry="3.6" fill="#D9C7EE" transform="rotate(-18 5 26)"/><ellipse cx="11" cy="23" rx="2.4" ry="3.6" fill="#C4ADE0" transform="rotate(18 11 23)"/><ellipse cx="5" cy="18" rx="2.1" ry="3.2" fill="#C4ADE0" transform="rotate(-14 5 18)"/><ellipse cx="11" cy="15" rx="2.1" ry="3.2" fill="#D9C7EE" transform="rotate(14 11 15)"/><ellipse cx="6" cy="11" rx="1.8" ry="2.8" fill="#B89FD4" transform="rotate(-10 6 11)"/><ellipse cx="10" cy="9" rx="1.8" ry="2.8" fill="#D9C7EE" transform="rotate(10 10 9)"/><circle cx="8" cy="6" r="1.6" fill="#E3D2AE" opacity="0.9"/></svg>
 
-  <img class="borboleta-fundo" src="img/borboleta-3.png" alt="" aria-hidden="true">
-
   <span class="faisca faisca--1" aria-hidden="true"></span>
   <span class="faisca faisca--2" aria-hidden="true"></span>
   <span class="faisca faisca--3" aria-hidden="true"></span>
   <span class="faisca faisca--4" aria-hidden="true"></span>
 
   <div class="quadro">
+
+    <img class="borboleta-fundo" src="img/borboleta-3.png" alt="" aria-hidden="true">
 
     <div class="texto">
       <div class="selo">Imersão Mulheres Renovadas para Transformar</div>
